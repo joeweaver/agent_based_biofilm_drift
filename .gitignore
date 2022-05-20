@@ -1,0 +1,7 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# ignore files downloaded from osf.io
+analyses/data/sweep_colony_outcomes/*

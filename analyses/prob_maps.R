@@ -3,35 +3,19 @@ library(dplyr) # work with tidy data
 library(ggplot2) # figure generation
 library(latex2exp) # generating better text labels for figures
 library(here) # manage paths, keep @JennyBryan from incinerating our machine
+library(logger) # logging
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
 # if not, you may need to run 0_download_sim_results.R first
 
-# TODO this is common code and should be extracted
-# # Set up logging ---------
+# load common code
+source('common.R')
+
+# Set up and start logging ---------
 # TODO send warnings to to their own file to make sure they're easy to browse
 # and not lost in info clutter?
-# Create the logs dir if it does not exist
-if(!dir.exists(here::here('logs'))){
-  dir.create(here::here('logs'))
-}
-logfile <- here::here("logs",
-                      paste0(format(Sys.time(), "%Y-%m-%d-%H-%M-%S_"),
-                             "describe_losers.txt"))
-log_appender(appender_file(logfile))
-log_info(strrep('#', 52)  )
-log_info('Beginning run.')
-log_info(strrep('#', 52)  )
-
-# Keep track of session info ---------
-log_info(strrep('#', 52)  )
-log_info('Session information')
-log_info(strrep('#', 52)  )
-# hacky. multi-line comlex info is a pain to get nicely formatted into logger
-sink(logfile, append=TRUE)
-sessionInfo()
-sink()
+start_logging("prob_maps.log")
 
 # TODO dry
 # Create relevant output dirs ---------
@@ -64,7 +48,7 @@ read_results <- function(filename){
   spacing = as.double(file_meta[[1]][4])
   return(res %>% mutate(m = m,n = n,spacing = spacing,nbugs = m*n))
 }
-
+sweep_dir <- "sweep_colony_outcomes"
 # gather all simulation results
 sim_results <- list.files(here::here("data",sweep_dir), full.names = TRUE) %>%
   lapply(read_results) %>%

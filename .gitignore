@@ -5,3 +5,7 @@
 
 # ignore files downloaded from osf.io
 analyses/data/sweep_colony_outcomes/*
+
+# ignore generated output
+analyses/logs/*
+analyses/output/*

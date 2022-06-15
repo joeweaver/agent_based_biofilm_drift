@@ -7,6 +7,9 @@ library(logger) # record info
 library(magrittr)
 library(ggplot2) # figure generation
 
+# Describe the distribution of biggest losers and thrive-survive-langquish
+# classes within the seed simulations for the baseline
+
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
 # if not, you may need to run 0_download_sim_results.R first

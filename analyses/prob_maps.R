@@ -5,6 +5,8 @@ library(latex2exp) # generating better text labels for figures
 library(here) # manage paths, keep @JennyBryan from incinerating our machine
 library(logger) # logging
 
+# Create a bunch of 2d probability maps
+
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
 # if not, you may need to run 0_download_sim_results.R first

@@ -46,21 +46,44 @@ create_dir <-function(location){
 create_dir(here::here('output'))
 create_dir(here::here('output', 'prob_maps'))
 
-# TODO right now uses one hardcoded sim result, should be applied to all
-# Read simulation results ---------
-res <- read_csv(here::here("data","sweep_colony_outcomes","sweep_colony_outcomes_5x5_5.csv"))
-filtered <- res %>% filter(biggest_loser)
 
-both_modified_colony <- filtered %>%
-  mutate(catnum = case_when(category == "Thriving" ~ 1,
-                            TRUE ~ 0))
-probs <- both_modified_colony %>%  group_by(ks,mu,yield) %>% summarise(prob_thrive = mean(catnum))
+# Read simulation results ---------
+
+# TODO DRY
+# read a simulation result csv and annotate the bug arrangements inferred
+# from the filename
+# sweep_colony_outcomes_2x3_4.csv would have a MxN 2x3 bug grid with
+# a spacing of 4 bug diameters and a total number of 12 bugs
+read_results <- function(filename){
+  res <- read_csv(filename,col_types = "idddiclddd")
+  file_meta <- str_match_all(
+    filename,
+    "sweep_colony_outcomes_(\\d*)x(\\d*)_(\\d*\\.*\\d*)\\.csv")
+  m = as.integer(file_meta[[1]][2])
+  n = as.integer(file_meta[[1]][3])
+  spacing = as.double(file_meta[[1]][4])
+  return(res %>% mutate(m = m,n = n,spacing = spacing,nbugs = m*n))
+}
+
+# gather all simulation results
+sim_results <- list.files(here::here("data",sweep_dir), full.names = TRUE) %>%
+  lapply(read_results) %>%
+  bind_rows
 
 base_mu = 0.00028
 base_ks = 3.5e-5
-probs <- probs %>% mutate(mu_pct = (mu - base_mu)/base_mu) %>%
+# process for plotting
+# determine the number of times a biggest loser was categorized as thriving
+ready_2_use <- sim_results %>% filter(biggest_loser) %>%
+  mutate(catnum = case_when(category == "Thriving" ~ 1,
+                            TRUE ~ 0)) %>%
+  group_by(nbugs, spacing, ks,mu,yield) %>%
+  summarise(prob_thrive = mean(catnum)) %>%
+  mutate(mu_pct = (mu - base_mu)/base_mu) %>% # discuss mu and ks in terms of pct change
   mutate(ks_pct = (ks - base_ks)/base_ks)
-p <- ggplot(data=probs, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
+
+
+p <- ggplot(data=ready_2_use, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
   geom_tile()+
   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"))+
@@ -79,7 +102,7 @@ p <- ggplot(data=probs, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0
         axis.title = element_text(size = 18),
         axis.text = element_text(size=16),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.background = element_blank(), axis.line = element_line(colour = "black"))
+        panel.background = element_blank(), axis.line = element_line(colour = "black")) + facet_grid(rows = vars(nbugs), cols=vars(spacing))
 p
 ggsave(here::here('output','prob_maps',"5x5_5_prob_map.png"),units="in",width=8,height=8,dpi=300)
 

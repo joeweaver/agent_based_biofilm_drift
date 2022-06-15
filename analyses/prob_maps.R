@@ -13,52 +13,19 @@ library(logger) # logging
 source('common.R')
 
 # Set up and start logging ---------
-# TODO send warnings to to their own file to make sure they're easy to browse
-# and not lost in info clutter?
 start_logging("prob_maps.log")
 
-# TODO dry
 # Create relevant output dirs ---------
-# TODO logger should be param
-create_dir <-function(location){
-  if(!dir.exists(here::here(location))){
-    dir.create(here::here(location))
-    log_info('Created ',location)
-  }
-}
-
-create_dir(here::here('output'))
-create_dir(here::here('output', 'prob_maps'))
-
+create_dir_if_not_exist(here::here('output'))
+create_dir_if_not_exist(here::here('output', 'prob_maps'))
 
 # Read simulation results ---------
+sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 
-# TODO DRY
-# read a simulation result csv and annotate the bug arrangements inferred
-# from the filename
-# sweep_colony_outcomes_2x3_4.csv would have a MxN 2x3 bug grid with
-# a spacing of 4 bug diameters and a total number of 12 bugs
-read_results <- function(filename){
-  res <- read_csv(filename,col_types = "idddiclddd")
-  file_meta <- str_match_all(
-    filename,
-    "sweep_colony_outcomes_(\\d*)x(\\d*)_(\\d*\\.*\\d*)\\.csv")
-  m = as.integer(file_meta[[1]][2])
-  n = as.integer(file_meta[[1]][3])
-  spacing = as.double(file_meta[[1]][4])
-  return(res %>% mutate(m = m,n = n,spacing = spacing,nbugs = m*n))
-}
-sweep_dir <- "sweep_colony_outcomes"
-# gather all simulation results
-sim_results <- list.files(here::here("data",sweep_dir), full.names = TRUE) %>%
-  lapply(read_results) %>%
-  bind_rows
 
-base_mu = 0.00028
-base_ks = 3.5e-5
 # process for plotting
 # determine the number of times a biggest loser was categorized as thriving
-ready_2_use <- sim_results %>% filter(biggest_loser) %>%
+prob_thrive <- sim_results %>% filter(biggest_loser) %>%
   mutate(catnum = case_when(category == "Thriving" ~ 1,
                             TRUE ~ 0)) %>%
   group_by(nbugs, spacing, ks,mu,yield) %>%
@@ -67,7 +34,7 @@ ready_2_use <- sim_results %>% filter(biggest_loser) %>%
   mutate(ks_pct = (ks - base_ks)/base_ks)
 
 
-p <- ggplot(data=ready_2_use, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
+p <- ggplot(data=prob_thrive, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
   geom_tile()+
   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"))+

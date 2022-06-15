@@ -1,6 +1,5 @@
 library(readr) # handle csv file import
 library(here)  # manage paths, keep @JennyBryan from incinerating our machine
-library(stringr) # extract values from strings. e.g. num bugs from filenames
 library(tidyr)
 library(dplyr)   # work with tidy data
 library(gt) # table generation
@@ -16,32 +15,13 @@ library(ggplot2) # figure generation
 source('common.R')
 
 # Set up and start logging ---------
-# TODO send warnings to to their own file to make sure they're easy to browse
-# and not lost in info clutter?
 start_logging("describe_losers.log")
 
+# Create relevant output dirs ---------
+create_dir_if_not_exist(here::here('output'))
 
-sweep_dir <- "sweep_colony_outcomes"
-
-# read a simulation result csv and annotate the bug arrangements inferred
-# from the filename
-# sweep_colony_outcomes_2x3_4.csv would have a MxN 2x3 bug grid with
-# a spacing of 4 bug diameters and a total number of 12 bugs
-read_results <- function(filename){
-  res <- read_csv(filename,col_types = "idddiclddd")
-  file_meta <- str_match_all(
-    filename,
-    "sweep_colony_outcomes_(\\d*)x(\\d*)_(\\d*\\.*\\d*)\\.csv")
-  m = as.integer(file_meta[[1]][2])
-  n = as.integer(file_meta[[1]][3])
-  spacing = as.double(file_meta[[1]][4])
-  return(res %>% mutate(m = m,n = n,spacing = spacing,nbugs = m*n))
-}
-
-# gather all simulation results
-sim_results <- list.files(here::here("data",sweep_dir), full.names = TRUE) %>%
-  lapply(read_results) %>%
-  bind_rows
+# Read simulation results ---------
+sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 
 # check for 1 and only 1 biggest loser per run
 sim_results %<>% filter() %>% # baseline mu and ks
@@ -61,14 +41,8 @@ probs <- sim_results %>% filter(mu == 0.00028, ks == 3.50e-05) %>% # baseline mu
   group_by(nbugs, spacing, colony)  %>%   # for each simulation
   summarize(times_lost = sum(biggest_loser))
 
-create_dir <-function(location){
-  if(!dir.exists(here::here(location))){
-    dir.create(here::here(location))
-    log_info('Created ',location)
-  }
-}
 
-create_dir(here::here('output'))
+create_dir_if_not_exist(here::here('output'))
 
 # baseline mu and ks
 baseline_sim_low_nutrients <- sim_results %>% filter(mu == 0.00028, ks == 3.50e-05)

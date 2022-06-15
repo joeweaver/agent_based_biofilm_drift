@@ -67,3 +67,16 @@ get_all_results <- function(outcomes_directory){
     bind_rows
   return(sim_results)
 }
+
+# Determine the observed chance that the biggest loser from the baseline would
+# thrive for based on percent changes in the baseline mu and ks kinetics
+thrive_probabilities <- function(simulation_outcomes){
+  prob_thrive <- sim_results %>% filter(biggest_loser) %>%
+    mutate(catnum = case_when(category == "Thriving" ~ 1,
+                              TRUE ~ 0)) %>%
+    group_by(nbugs, spacing, ks,mu,yield) %>%
+    summarise(prob_thrive = mean(catnum)) %>%
+    mutate(mu_pct = (mu - base_mu)/base_mu) %>% # discuss mu and ks in terms of pct change
+    mutate(ks_pct = (ks - base_ks)/base_ks)
+    return(prob_thrive)
+}

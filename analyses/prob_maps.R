@@ -25,17 +25,11 @@ create_dir_if_not_exist(here::here('output', 'prob_maps'))
 sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 
 
-# process for plotting
+# Process for plotting ------------
 # determine the number of times a biggest loser was categorized as thriving
-prob_thrive <- sim_results %>% filter(biggest_loser) %>%
-  mutate(catnum = case_when(category == "Thriving" ~ 1,
-                            TRUE ~ 0)) %>%
-  group_by(nbugs, spacing, ks,mu,yield) %>%
-  summarise(prob_thrive = mean(catnum)) %>%
-  mutate(mu_pct = (mu - base_mu)/base_mu) %>% # discuss mu and ks in terms of pct change
-  mutate(ks_pct = (ks - base_ks)/base_ks)
+prob_thrive <- thrive_probabilities(sim_results)
 
-
+# Plot fitness probabiliy maps ------------
 p <- ggplot(data=prob_thrive, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
   geom_tile()+
   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),

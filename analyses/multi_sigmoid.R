@@ -26,40 +26,8 @@ create_dir_if_not_exist(here::here('output'))
 # Read simulation results ---------
 sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 
-read_sim_results <- function(ifname, spacing, N){
-  res <- read_csv(ifname)
-  res$spacing <- spacing
-  res$N <- N
-  return(res)
-}
-
-res <- rbind(
-  read_sim_results(here::here("download","sweep_colony_outcomes_3x3_5.csv"),
-                   spacing = 5,
-                   N = 3*3),
-  read_sim_results(here::here("data","3x3_10_sweep_colony_outcomes.csv"),
-                   spacing = 10,
-                   N = 3*3),
-  read_sim_results(here::here("download","sweep_colony_outcomes_2x2_5.csv"),
-                   spacing = 5,
-                   N = 2*2),
-  read_sim_results(here::here("download","sweep_colony_outcomes_4x4_5.csv"),
-                   spacing = 5,
-                   N = 4*4),
-  read_sim_results(here::here("download","sweep_colony_outcomes_5x5_5.csv"),
-                   spacing = 5,
-                   N = 5*5)
-)
-
-filtered <- sim_results %>% filter(biggest_loser)
-
-both_modified_colony <- filtered %>%
-  mutate(catnum = case_when(category == "Thriving" ~ 1,
-                                                               TRUE ~ 0))
-probs <- both_modified_colony %>%  group_by(ks,mu,yield,nbugs,spacing) %>% summarise(prob_thrive = mean(catnum))
-
-probs <- probs %>% mutate(mu_pct = (mu - base_mu)/base_mu) %>%
-  mutate(ks_pct = (ks - base_ks)/base_ks)
+# Calculate from observations a biggest loser's probabily of thriving --------
+probs <- thrive_probabilities(sim_results)
 
 
 

@@ -111,7 +111,24 @@ all_spreads_1sd<-rbind(get_spreads(sig_fits,4,2.5,0.68),
 
 all_spreads <- rbind(all_spreads_1sd,all_spreads_2d) %>% mutate(ks_pct = ks/base_ks -1)
 
-ggplot(all_spreads,aes(x=ks_pct,y=spread,color=factor(range_pct)))+geom_point()+
+ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread))+geom_point()+
+  geom_smooth(method="lm")+
+  facet_grid(cols=vars(spacing),rows=vars(nbugs))+
+  stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
+
+ss<-all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs == 16) %>%filter(spacing == 10)
+lmf <- lm(spread~ks_pct,ss)
+lmf
+summary(lmf)
+plot(ss$ks_pct,ss$spread)
+plot(lmf)
+
+ggplot(all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs %in% c(9)),aes(x=spacing,y=mu_50))+geom_point()+
+  geom_smooth(method="lm")+
+  facet_grid(cols=vars(nbugs),rows=vars(ks_pct))+
+  stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
+
+ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread,color=factor(range_pct)))+geom_point()+
   geom_smooth(method="lm")+
   facet_grid(cols=vars(spacing),rows=vars(nbugs))+
   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")

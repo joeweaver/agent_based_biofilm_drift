@@ -8,8 +8,8 @@ base_ks = 3.5e-5
 
 # Create a directory if it does not exist, optionally log to log_info
 create_dir_if_not_exist <- function(location, do_log = FALSE){
-  if(!dir.exists(here::here('logs'))){
-    dir.create(here::here('logs'))
+  if(!dir.exists(here::here(location))){
+    dir.create(here::here(location))
     if(do_log){
       log_info('Created ',location)
     }
@@ -79,4 +79,9 @@ thrive_probabilities <- function(simulation_outcomes){
     mutate(mu_pct = (mu - base_mu)/base_mu) %>% # discuss mu and ks in terms of pct change
     mutate(ks_pct = (ks - base_ks)/base_ks)
     return(prob_thrive)
+}
+
+# the logistic/sigmoid function which we are fitting
+logistic_fun<-function(mu,xo,k){
+  return(1/(1+exp(-k*(mu-xo))))
 }

@@ -60,6 +60,11 @@ p<- baseline_sim_low_nutrients %>%
   facet_grid(cols = vars(nbugs))
 ggsave(here::here('output','baseline_pct_losses.png'))
 
+a<-baseline_sim_low_nutrients %>%
+  group_by(nbugs, spacing, colony)  %>%   # for each simulation
+  summarize(times_lost = sum(biggest_loser))  %>%
+  group_by(nbugs,spacing) %>%
+  summarize(sum(times_lost))
 # Chisq test
 chisq_tests <- baseline_sim_low_nutrients %>%
   group_by(nbugs, spacing, colony)  %>%   # for each simulation

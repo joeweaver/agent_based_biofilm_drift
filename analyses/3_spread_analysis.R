@@ -142,8 +142,12 @@ nbugs_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>intial bacteria<span>")
 }
 
+# TODO break this out into its own
+sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
+probs <- thrive_probabilities(sim_results)
+
 p<-ggplot(data=all_spreads, aes(x=mu_50*100, y=ks_pct*100)) +
-  geom_tile(data=prob_thrive,aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
+  geom_tile(data=probs,aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"))+
   geom_segment(data=all_spreads %>% filter(range_pct %in% c(0.95)),

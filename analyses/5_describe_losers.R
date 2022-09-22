@@ -7,7 +7,7 @@ library(logger) # record info
 library(magrittr)
 library(ggplot2) # figure generation
 
-# Describe the distribution of biggest losers and thrive-survive-langquish
+# Describe the distribution of biggest losers and thrive-survive-lanquish
 # classes within the seed simulations for the baseline
 
 # precondition
@@ -17,8 +17,9 @@ library(ggplot2) # figure generation
 # load common code
 source('common.R')
 
+# TODO renumber this so it comes earlier in the sequence
 # Set up and start logging ---------
-start_logging("describe_losers.log")
+start_logging("5_describe_losers.log")
 
 # Create relevant output dirs ---------
 create_dir_if_not_exist(here::here('output'))
@@ -31,13 +32,24 @@ sim_results %<>% filter() %>% # baseline mu and ks
   group_by(nbugs,seed, spacing)  %>%   # for each simulation
   mutate(n_losers = sum(biggest_loser))
 
-poor_losers <- sim_results %>% filter(n_losers == 121)  # 121 seeds per grouping
+poor_losers <- sim_results %>% filter(n_losers != 121)  # 121 seeds per grouping
 if( nrow(poor_losers) != 0){
   # TODO also check
   warning('Some runs did not have 1 and only 1 biggest loser. See poor_losers')
-
+  unique(poor_losers$nbugs)
+  fours<-poor_losers %>% filter(nbugs == 16)
+  fives<-poor_losers %>% filter(nbugs == 25)
+  unique(fours$seed)
+  unique(fives$seed)
 }
-
+# TODO split this out into a data quality checker
+fivesok<-sim_results %>% filter(n_losers == 121) %>% filter(nbugs==25) %>% filter(spacing == 5)
+unique(fivesok$seed)
+unique(fours$colony)
+a<-fivesok %>% filter(seed == 1031)
+foursok<-sim_results %>% filter(n_losers == 121) %>% filter(nbugs==16) %>% filter(spacing == 10)
+unique(foursok$seed)
+unique(foursok$colony)
 # TODO generate histogram of biggest loser positions, show it's evenly
 # distributed
 probs <- sim_results %>% filter(mu == 0.00028, ks == 3.50e-05) %>% # baseline mu and ks

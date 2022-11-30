@@ -7,6 +7,7 @@ library(broom)
 library(tidyr)
 library(purrr)
 library(RColorBrewer)
+library(ggpmisc)
 
 # Checking linearity assumption for mu_50
 
@@ -111,6 +112,8 @@ linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,16,10))
 linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,25,5))
 #linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,25,10))
 
+
+
 # Checking quadratic term ----------------------------------------------------
 lm_quad_fits<-function(.data,N,s){
   b <- sig_fits %>% filter(nbugs %in% c(N)) %>% filter(spacing %in% c(s))
@@ -156,6 +159,68 @@ linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,16,10))
 #linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,25,2.5))
 linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,25,5))
 #linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,25,10))
+
+annotes<-linear_fit_summaries %>%
+  mutate(eqn = paste("y= ",m,"x + ",b))
+
+ggplot(data=sig_fits,aes(x=mu_50,y=ks,color=factor(spacing),group=factor(spacing))) +
+  geom_point()+facet_wrap(ncol=vars(nbugs))
+
+sig_fits$ks_pct <- sig_fits$ks/base_ks-1
+sig_fits$k2 <- sig_fits$ks_pct^2
+
+formula <- y ~ poly(x, 1, raw = TRUE)
+# spacing becomes more important at greater initial populations
+poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
+names(poplabs) <- c("4","9","16","25")
+p <- ggplot(sig_fits, aes(x=ks_pct,y=mu_50,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
+#  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
+#               linetype="solid",size=1.2,alpha=0.5) +
+  geom_smooth(method='lm', formula= formula, se=FALSE,size=0.4)+
+  stat_poly_eq(formula=formula,
+               coef.digits = 3,
+               rr.digits = 2,
+               size=1.9,
+               eq.with.lhs = "italic(mu[~~50])~`=`~",
+               eq.x.rhs = "italic(K[s])",
+               label.y = "bottom", label.x = "right",
+               aes(label = paste(after_stat(eq.label),
+                                 after_stat(rr.label), sep = "*\", \"*")))+
+  geom_point(size=1.1,alpha=0.9)+
+  #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
+  ylab(TeX("50% Thriving Odds ($\\μ_{50}$)")) +
+  xlab(TeX("Change in substrate affnity ($\\k_{s}$)")) +
+  #ylim(-0.3,0.7)+
+  coord_fixed()+
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1),
+                     breaks = seq(-0.50,0.90,0.10))+
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1),
+                     breaks = seq(-0.50,0.50,0.10))+
+  scale_color_brewer(palette = "Dark2")+
+  guides(color=guide_legend(title="Spacing"),
+         shape=guide_legend(title="Spacing"),
+         linetype=guide_legend(title="Spacing")) +
+  theme(legend.position = c(0.5,0.95),
+        legend.direction = "horizontal",
+        legend.title = element_text(size = 6),
+        legend.text = element_text(size = 6),
+        axis.title = element_text(size = 9,color="black"),
+        axis.text = element_text(size=6,color="black"),
+        axis.text.x = element_text(angle=-45),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        strip.text = element_text(size=8,color="black"),
+        strip.background = element_blank())+
+  facet_grid(cols=vars(nbugs), labeller = labeller(nbugs = poplabs))
+
+ggsave(here::here('output','mu_50_trend.tiff'),width=8,height=3.5, units="in",
+       dpi=330)
+ggsave(here::here('output','mu_50_trend.png'),width=8,height=3.5, units="in",
+       dpi=330)
+ggsave(here::here('output','mu_50_trend.pdf'),width=8,height=3.5, units="in",
+       dpi=330)
+
+
 
 # -------------------------------------------------------------------------
 ## checking to see if non linear issue is due to  using ks, mu pct

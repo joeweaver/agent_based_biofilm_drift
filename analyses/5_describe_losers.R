@@ -6,6 +6,7 @@ library(gt) # table generation
 library(logger) # record info
 library(magrittr)
 library(ggplot2) # figure generation
+library(ggh4x)
 
 # Describe the distribution of biggest losers and thrive-survive-lanquish
 # classes within the seed simulations for the baseline
@@ -64,54 +65,92 @@ baseline_sim_low_nutrients <- sim_results %>% filter(mu == 0.00028, ks == 3.50e-
 
 # TODO need high nutrients as well
 
-# create plot
-p<- baseline_sim_low_nutrients %>%
-  group_by(nbugs, spacing, colony)  %>%   # for each simulation
-  summarize(times_lost = sum(biggest_loser)/121) %>%
-  ggplot(aes(x=colony,y=times_lost, color=factor(spacing))) + geom_point() +
-  facet_grid(cols = vars(nbugs))
-ggsave(here::here('output','baseline_pct_losses.png'))
+short_nbugs_label <- function(string) {
+  glue::glue("Initial Pop.: {string}")
+}
 
-a<-baseline_sim_low_nutrients %>%
+# create plot
+p <- baseline_sim_low_nutrients %>%
   group_by(nbugs, spacing, colony)  %>%   # for each simulation
-  summarize(times_lost = sum(biggest_loser))  %>%
-  group_by(nbugs,spacing) %>%
-  summarize(sum(times_lost))
+  summarize(times_lost = sum(biggest_loser)) %>%
+  mutate(expected = 1/nbugs*121) %>%
+  ggplot(aes(x=colony,y=times_lost, color=factor(spacing))) +
+  geom_hline(aes(yintercept=expected),alpha=0.5,linetype="dashed")+
+  geom_point(alpha=0.6,size=0.9) +
+  facet_grid(cols = vars(nbugs),scales="free_x", labeller = labeller( .cols = short_nbugs_label )) +
+  xlab("Colony ID") +
+  ylab("Occurrences as Lowest Abundance")+
+  guides(color=guide_legend(title="Spacing (diameters):")) +
+  ggh4x::facetted_pos_scales(x = list(
+    nbugs == 4 ~ scale_x_continuous(breaks = c(1,2,3,4)),
+    nbugs == 9 ~ scale_x_continuous(breaks = c(1,3,5,7,9)),
+    nbugs == 16 ~ scale_x_continuous(breaks = c(4,8,12,16)),
+    nbugs == 25 ~ scale_x_continuous(breaks = c(5,10,15,20,25))
+  )) +
+  theme(legend.position = c(0.625,0.95),#"top",
+        legend.direction = "horizontal",
+        legend.title = element_text(size = 6),
+        legend.text = element_text(size = 6),
+        legend.background=element_blank(),
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size=7),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        strip.background = element_rect(color="black", fill="white", linetype="solid"),
+        strip.text.x = element_text(size=6))
+
+ggsave(here::here('output','baseline_pct_losses.tiff'),width=3.5,height=3.5, units="in",
+       dpi=330)
+ggsave(here::here('output','baseline_pct_losses.png'),width=3.5,height=3.5, units="in",
+       dpi=330)
+ggsave(here::here('output','baseline_pct_losses.pdf'),width=3.5,height=3.5, units="in",
+       dpi=330)
+
+
 # Chisq test
 chisq_tests <- baseline_sim_low_nutrients %>%
   group_by(nbugs, spacing, colony)  %>%   # for each simulation
-  summarize(times_lost = sum(biggest_loser))  %>%
+  summarize(times_lost = sum(biggest_loser)) %>%
   group_by(nbugs,spacing) %>%
-  summarize(cs = chisq.test(times_lost)$p.value) %>%
+  summarize(cs = chisq.test(times_lost,simulate.p.value=TRUE)$p.value) %>%
   mutate(sig = cs < 0.05/nrow(chisq_tests))
 
+## convert to wider and save as CSV for a table in SI
+chisq_tests %>% pivot_wider(names_from = spacing,
+                            values_from = c(cs, sig)) %>%
+  write_csv(here::here("output","chisq_biggest_loser.csv"))
 
-chisq_for_doc <- chisq_tests %>% pivot_wider(names_from = nbugs, values_from =cs) %>%
-  gt() %>%
-  fmt_number(
-    columns = everything(),
-    decimals = 2) %>%
-  tab_spanner(
-    label = "Initial Sites",
-    columns = c(2:5))
-gtsave(a,here::here('output','chisq_drift.html'))
 
-# TODO histogram of thrive/not thrive
-#
-probs <- baseline_sim_low_nutrients %>% filter(nbugs==4) %>%
-  filter(colony < 5) %>%# baseline mu and ks
+
+# Get an idea of the percentages & abundances of survivorship classes
+pctSurvivorClass<-baseline_sim_low_nutrients %>%
   group_by(seed,nbugs, spacing)  %>%   # for each simulation
   count(category) %>%
-  mutate(pct = n/nbugs)
+  mutate(pct=n/nbugs)%>%
+  select(-n)%>%
+  pivot_wider(names_from = category,
+              values_from = pct) %>%
+  ungroup(seed)%>%
+  replace(is.na(.), 0) %>%
+  summarize(pctThrive=mean(Thriving),
+            pmThrive=sd(Thriving),
+            pctSurvive=mean(Surviving),
+            pmSurvive=sd(Surviving),
+            pctLanguish=mean(Languishing),
+            pmLanguish=sd(Languishing)) %>%
+    mutate(absThrive=pctThrive*nbugs,
+           abspmThrive=pmThrive*nbugs,
+           absSurvive=pctSurvive*nbugs,
+           abspmSurvive=pmSurvive*nbugs,
+           absLanguish=pctLanguish*nbugs,
+           abspmLanguishe=pmLanguish*nbugs)
 
-probs %>% ggplot(aes(x=category,y=pct)) +
-  geom_boxplot()
+pctSurvivorClass %>% select(-starts_with("abs")) %>%
+  pivot_wider(names_from = spacing,
+                            values_from = c(pctThrive,pmThrive,pctSurvive,pmSurvive,pctLanguish,pmLanguish)) %>%
+  write_csv(here::here("output","precent_survivor_clases.csv"))
 
-probs <- baseline_sim_low_nutrients %>% filter(nbugs==16) %>%
 
-  group_by(seed,nbugs, spacing)  %>%   # for each simulation
-  count(category) %>%
-  mutate(pct = n/nbugs)
 
-probs %>% ggplot(aes(x=category,y=n)) +
-  geom_jitter(height=0)+ylim(0,9)
+
+

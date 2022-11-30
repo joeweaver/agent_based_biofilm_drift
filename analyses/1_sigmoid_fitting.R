@@ -1,15 +1,15 @@
-library(readr)
-library(dplyr)
-library(here)
-library(ggplot2)
-library(RColorBrewer)
-
 # Fit sigmoid curves to each run. Mu_pct vs prob thrive for each combination of
 #  N bugs, spacing, and ks. Write plots of each fit to an eda directory
 #  and save fit data to a csv.
 
+library(readr) # read CSV formatted data
+library(dplyr) # osf can be navigated using dplyr style stuff
+library(here)  # manage paths, keep @JennyBryan from incinerating our machine
+library(ggplot2) # plotting
+library(RColorBrewer) # color palette management
+
 # precondition
-# ./data/sweep_colony_outcomes should contain csvs describing simulation results
+# ./data/sweep_colony_outcomes should contain CSVs describing simulation results
 # if not, you may need to run 0_download_sim_results.R first
 
 # load common code
@@ -116,7 +116,6 @@ sigmoid_fits<-rbind(fit_sigmoids(probs,4,2.5),
 write_csv(sigmoid_fits,here::here("output","sigmoid_fits.csv"))
 
 # creating some SI plots
-
 per_run_sigmoid_plots <- function(sf,pthrive, N, s) {
   df <- sf %>% filter(nbugs %in% c(N))%>%
     filter(spacing %in% c(s))
@@ -145,7 +144,18 @@ per_run_sigmoid_plots <- function(sf,pthrive, N, s) {
           legend.text = element_text(size=4),
           legend.title = element_text(size=6))
 
-  ggsave(here::here("output","si",glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.tiff")),p,width=3.75,height=3.75,units="in",dpi=300)
+  ggsave(here::here("output","si"
+                    ,glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.tiff")),
+         p,
+         width=3.75,height=3.75,units="in",dpi=330)
+  ggsave(here::here("output","si"
+                    ,glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.pdf")),
+         p,
+         width=3.75,height=3.75,units="in",dpi=330)
+  ggsave(here::here("output","si"
+                    ,glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.png")),
+         p,
+         width=3.75,height=3.75,units="in",dpi=330)
 }
 
 per_run_sigmoid_plots(sigmoid_fits,probs,4,2.5)

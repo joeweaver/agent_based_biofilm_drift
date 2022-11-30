@@ -8,7 +8,7 @@ library(dplyr) # osf can be navigated using dplyr style stuff
 library(here)  # manage paths, keep @JennyBryan from incinerating our machine
 
 # Until we put this up on a preprint, the data repo is private, so
-# we need to authenticat with an OSF PAT, stored in .Renvironment.
+# we need to authenticate with an OSF PAT, stored in .Renvironment.
 # This requirement can go away once it's public, but there's still benefits to
 # using a PAT
 

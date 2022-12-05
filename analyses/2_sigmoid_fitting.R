@@ -17,7 +17,7 @@ library(tools) # for MD5 checksums
 source('common.R')
 
 # Set up and start logging ---------
-start_logging("1_sigmoid_fitting.log")
+start_logging("2_sigmoid_fitting.log")
 
 # Create relevant output dirs ---------
 create_dir_if_not_exist(here::here('output'))
@@ -94,12 +94,13 @@ fit_sigmoids <- function(df,N,s){
          xlab="% mu change",ylab="Thrive probability",main=title,sub=subt)
     lines(mus,logistic_fun(mus,m2$par[1],m2$par[2]),col='blue')
     dev.off()
+    log_info(paste('Wrote', file.path("output","eda","sigmoid_fits",fname), ' MD5Sum: ',
+                   md5sum(here::here("output","eda","sigmoid_fits",fname))))
   }
   return(rec)
 }
 
-# TODO enable fitting on 5x5_2.5 and 5x5_10 when runs completed
-# fit sigmoids for all runs
+
 sigmoid_fits<-rbind(fit_sigmoids(probs,4,2.5),
       fit_sigmoids(probs,4,5),
       fit_sigmoids(probs,4,10),
@@ -108,13 +109,12 @@ sigmoid_fits<-rbind(fit_sigmoids(probs,4,2.5),
       fit_sigmoids(probs,9,10),
       fit_sigmoids(probs,16,2.5),
       fit_sigmoids(probs,16,5),
-      fit_sigmoids(probs,16,10),
-      #fit_sigmoids(probs,25,2.5),
-      fit_sigmoids(probs,25,5))
-      #fit_sigmoids(probs,25,10))
+      fit_sigmoids(probs,16,10))
 
 # save the fits to a csv file
 write_csv(sigmoid_fits,here::here("output","sigmoid_fits.csv"))
+log_info(paste('Wrote', file.path("output","sigmoid_fits.csv"), ' MD5Sum: ',
+               md5sum(here::here("output","sigmoid_fits.csv"))))
 
 # creating some SI plots
 per_run_sigmoid_plots <- function(sf,pthrive, N, s) {
@@ -148,21 +148,21 @@ per_run_sigmoid_plots <- function(sf,pthrive, N, s) {
   fname <- glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.tiff")
   floc <- here::here("output","si",fname)
   file.path("output","si",fname)
-  ggsave(fname, p, width=3.75,height=3.75,units="in",dpi=330)
+  ggsave(floc, p, width=3.75,height=3.75,units="in",dpi=330)
   log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                  md5sum(floc)))
 
   fname <- glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.png")
   floc <- here::here("output","si",fname)
   file.path("output","si",fname)
-  ggsave(fname, p, width=3.75,height=3.75,units="in",dpi=330)
+  ggsave(floc, p, width=3.75,height=3.75,units="in",dpi=330)
   log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                  md5sum(floc)))
 
   fname <- glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.pdf")
   floc <- here::here("output","si",fname)
   file.path("output","si",fname)
-  ggsave(fname, p, width=3.75,height=3.75,units="in",dpi=330)
+  ggsave(floc, p, width=3.75,height=3.75,units="in",dpi=330)
   log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                  md5sum(floc)))
 }
@@ -178,8 +178,3 @@ per_run_sigmoid_plots(sigmoid_fits,probs,9,10)
 per_run_sigmoid_plots(sigmoid_fits,probs,16,2.5)
 per_run_sigmoid_plots(sigmoid_fits,probs,16,5)
 per_run_sigmoid_plots(sigmoid_fits,probs,16,10)
-
-# TODO include runs when complete
-#per_run_sigmoid_plots(sigmoid_fits,probs,25,2.5)
-per_run_sigmoid_plots(sigmoid_fits,probs,25,5)
-#per_run_sigmoid_plots(sigmoid_fits,probs,25,10)

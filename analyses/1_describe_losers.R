@@ -1,26 +1,29 @@
+# Test the assumption of drift in base case using Chi-sq test and
+# break down the survivor classes during simulation
+
 library(readr) # handle csv file import
 library(here)  # manage paths, keep @JennyBryan from incinerating our machine
-library(tidyr)
+library(tidyr) # used for pivots
 library(dplyr)   # work with tidy data
 library(gt) # table generation
 library(logger) # record info
-library(magrittr)
+library(magrittr) # for %<>% construct
 library(ggplot2) # figure generation
-library(ggh4x)
-
-# Describe the distribution of biggest losers and thrive-survive-lanquish
-# classes within the seed simulations for the baseline
+library(ggh4x) # extend ggplot2
+library(tools) # for MD5 checksums
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
 # if not, you may need to run 0_download_sim_results.R first
 
+# n.b. sweep_colony_outcomes for 2x2_5 had blank columns for site IDs > 4
+# these were manually removed and the updated file uploaded to OSF
+
 # load common code
 source('common.R')
 
-# TODO renumber this so it comes earlier in the sequence
 # Set up and start logging ---------
-start_logging("5_describe_losers.log")
+start_logging("1_describe_losers.log")
 
 # Create relevant output dirs ---------
 create_dir_if_not_exist(here::here('output'))
@@ -28,52 +31,37 @@ create_dir_if_not_exist(here::here('output'))
 # Read simulation results ---------
 sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 
-# check for 1 and only 1 biggest loser per run
-sim_results %<>% filter() %>% # baseline mu and ks
-  group_by(nbugs,seed, spacing)  %>%   # for each simulation
+
+# Data QA -----------------------------------------------------------------
+
+# 1 and only 1 biggest loser per run
+sim_results %<>%
+  group_by(nbugs, spacing,ks,mu)  %>%   # for each simulation
   mutate(n_losers = sum(biggest_loser))
 
-poor_losers <- sim_results %>% filter(n_losers != 121)  # 121 seeds per grouping
+poor_losers <- sim_results %>% filter(n_losers != 120)  # 120 seeds per grouping
 if( nrow(poor_losers) != 0){
-  # TODO also check
   warning('Some runs did not have 1 and only 1 biggest loser. See poor_losers')
   unique(poor_losers$nbugs)
   fours<-poor_losers %>% filter(nbugs == 16)
-  fives<-poor_losers %>% filter(nbugs == 25)
   unique(fours$seed)
-  unique(fives$seed)
 }
-# TODO split this out into a data quality checker
-fivesok<-sim_results %>% filter(n_losers == 121) %>% filter(nbugs==25) %>% filter(spacing == 5)
-unique(fivesok$seed)
-unique(fours$colony)
-a<-fivesok %>% filter(seed == 1031)
-foursok<-sim_results %>% filter(n_losers == 121) %>% filter(nbugs==16) %>% filter(spacing == 10)
-unique(foursok$seed)
-unique(foursok$colony)
-# TODO generate histogram of biggest loser positions, show it's evenly
-# distributed
-probs <- sim_results %>% filter(mu == 0.00028, ks == 3.50e-05) %>% # baseline mu and ks
-  group_by(nbugs, spacing, colony)  %>%   # for each simulation
-  summarize(times_lost = sum(biggest_loser))
 
 
-create_dir_if_not_exist(here::here('output'))
 
-# baseline mu and ks
+# Plotting number of losers by site ------------------------
+# we only want baseline identical bugs in these analyses
 baseline_sim_low_nutrients <- sim_results %>% filter(mu == 0.00028, ks == 3.50e-05)
 
-# TODO need high nutrients as well
-
 short_nbugs_label <- function(string) {
-  glue::glue("Initial Pop.: {string}")
+  glue::glue("Initial Population: {string}")
 }
 
 # create plot
 p <- baseline_sim_low_nutrients %>%
   group_by(nbugs, spacing, colony)  %>%   # for each simulation
   summarize(times_lost = sum(biggest_loser)) %>%
-  mutate(expected = 1/nbugs*121) %>%
+  mutate(expected = 1/nbugs*120) %>%
   ggplot(aes(x=colony,y=times_lost, color=factor(spacing))) +
   geom_hline(aes(yintercept=expected),alpha=0.5,linetype="dashed")+
   geom_point(alpha=0.6,size=0.9) +
@@ -99,30 +87,47 @@ p <- baseline_sim_low_nutrients %>%
         strip.background = element_rect(color="black", fill="white", linetype="solid"),
         strip.text.x = element_text(size=6))
 
-ggsave(here::here('output','baseline_pct_losses.tiff'),width=3.5,height=3.5, units="in",
-       dpi=330)
-ggsave(here::here('output','baseline_pct_losses.png'),width=3.5,height=3.5, units="in",
-       dpi=330)
-ggsave(here::here('output','baseline_pct_losses.pdf'),width=3.5,height=3.5, units="in",
-       dpi=330)
+fname <- "baseline_pct_losses.png"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=3.75,height=3.75,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+                md5sum(floc)))
+
+fname <- "baseline_pct_losses.tiff"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=3.75,height=3.75,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 
-# Chisq test
+fname <- "baseline_pct_losses.pdf"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=3.75,height=3.75,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+# Chi-sq test -------------------------------------------------------------
 chisq_tests <- baseline_sim_low_nutrients %>%
   group_by(nbugs, spacing, colony)  %>%   # for each simulation
   summarize(times_lost = sum(biggest_loser)) %>%
   group_by(nbugs,spacing) %>%
-  summarize(cs = chisq.test(times_lost,simulate.p.value=TRUE)$p.value) %>%
-  mutate(sig = cs < 0.05/nrow(chisq_tests))
+  summarize(cs = chisq.test(times_lost,simulate.p.value=TRUE)$p.value)
+
+chisq_tests %<>% mutate(sig = cs < 0.05/nrow(chisq_tests))
 
 ## convert to wider and save as CSV for a table in SI
 chisq_tests %>% pivot_wider(names_from = spacing,
                             values_from = c(cs, sig)) %>%
   write_csv(here::here("output","chisq_biggest_loser.csv"))
 
+fname <- "chisq_biggest_loser.csv"
+floc <- here::here("output",fname)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 
-# Get an idea of the percentages & abundances of survivorship classes
+# Get an idea of the percentages & abundances of survivorship cl --------
+
 pctSurvivorClass<-baseline_sim_low_nutrients %>%
   group_by(seed,nbugs, spacing)  %>%   # for each simulation
   count(category) %>%
@@ -150,7 +155,7 @@ pctSurvivorClass %>% select(-starts_with("abs")) %>%
                             values_from = c(pctThrive,pmThrive,pctSurvive,pmSurvive,pctLanguish,pmLanguish)) %>%
   write_csv(here::here("output","precent_survivor_clases.csv"))
 
-
-
-
-
+fname <- "precent_survivor_clases.csv"
+floc <- here::here("output",fname)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))

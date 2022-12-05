@@ -1,15 +1,16 @@
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(latex2exp)
-library(here)
-library(broom)
-library(tidyr)
-library(purrr)
-library(RColorBrewer)
-library(ggpmisc)
+# Analyze how mu_50 varies between conditions
 
-# Checking linearity assumption for mu_50
+library(readr) # handle csv file import
+library(dplyr)  # work with tidy data
+library(ggplot2) # figure generation
+library(latex2exp)  # use LaTeX expressions for creating axis labels
+library(here) # manage paths, keep @JennyBryan from incinerating our machine
+library(broom) # helps fits work well with dataframes
+library(tidyr) # used for pivots
+library(purrr) # helps with some functional programming
+library(RColorBrewer) # palette management in plots
+library(ggpmisc) # add regression fits to plot
+
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
@@ -22,7 +23,7 @@ library(ggpmisc)
 source('common.R')
 
 # Set up and start logging ---------
-start_logging("2_mu_50_analysis.log")
+start_logging("3_mu_50_analysis.log")
 
 # Create relevant output dirs ---------
 create_dir_if_not_exist(here::here('output'))
@@ -60,12 +61,21 @@ lmfits<-function(.data,N,s){
   lines(x=b$ks_pct,predict(lfit,data=b))
   dev.off()
 
+  floc <- here::here("output","eda","mu_50_fits",fname)
+  log_info(paste('Wrote', file.path("output","eda","mu_50_fits",fname), ' MD5Sum: ',
+                 md5sum(floc)))
+
   fname<-glue::glue("linfit_{sqrt(N)}x{sqrt(N)}_{s}_spacing_diag.png")
   png(here::here("output","eda","mu_50_fits",fname), width=800,height=800,units="px")
   par(mfrow=c(2,2))
   title<-glue::glue("Diagnostic lm(mu_50~ks_pct) {sqrt(N)}x{sqrt(N)} {s} spacing")
   plot(lfit,main=title)
   dev.off()
+
+  floc <- here::here("output","eda","mu_50_fits",fname)
+  log_info(paste('Wrote', file.path("output","eda","mu_50_fits",fname), ' MD5Sum: ',
+                 md5sum(floc)))
+
   return(lfit)
 }
 
@@ -107,12 +117,6 @@ linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,16,2.5))
 linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,16,5))
 linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,16,10))
 
-# TODO include when runs finished
-#linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,25,2.5))
-linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,25,5))
-#linear_fit_summaries<-rbind(linear_fit_summaries,record_lmfit(probs,25,10))
-
-
 
 # Checking quadratic term ----------------------------------------------------
 lm_quad_fits<-function(.data,N,s){
@@ -130,12 +134,21 @@ lm_quad_fits<-function(.data,N,s){
   lines(b$ks_pct[ix], pred[ix], col='red',lwd=2)
   dev.off()
 
+  floc <- here::here("output","eda","mu_50_fits",fname)
+  log_info(paste('Wrote', file.path("output","eda","mu_50_fits",fname), ' MD5Sum: ',
+                 md5sum(floc)))
+
   fname<-glue::glue("linfit_{sqrt(N)}x{sqrt(N)}_{s}_spacing_diag_quad.png")
   png(here::here("output","eda","mu_50_fits",fname), width=800,height=800,units="px")
   par(mfrow=c(2,2))
   title<-glue::glue("Diagnostic lm(mu_50~ks_pct) {sqrt(N)}x{sqrt(N)} {s} spacing")
   plot(lfit,main=title)
   dev.off()
+
+  floc <- here::here("output","eda","mu_50_fits",fname)
+  log_info(paste('Wrote', file.path("output","eda","mu_50_fits",fname), ' MD5Sum: ',
+                 md5sum(floc)))
+
   return(lfit)
 }
 
@@ -155,24 +168,15 @@ linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,16,2.5))
 linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,16,5))
 linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,16,10))
 
-# TODO include when runs finished
-#linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,25,2.5))
-linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,25,5))
-#linear_fit_summaries<-rbind(linear_fit_summaries,record_quadfit(probs,25,10))
-
-annotes<-linear_fit_summaries %>%
-  mutate(eqn = paste("y= ",m,"x + ",b))
-
-ggplot(data=sig_fits,aes(x=mu_50,y=ks,color=factor(spacing),group=factor(spacing))) +
-  geom_point()+facet_wrap(ncol=vars(nbugs))
-
 sig_fits$ks_pct <- sig_fits$ks/base_ks-1
 sig_fits$k2 <- sig_fits$ks_pct^2
 
+
+# Create and save plot ----------------------------------------------------
 formula <- y ~ poly(x, 1, raw = TRUE)
 # spacing becomes more important at greater initial populations
-poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
-names(poplabs) <- c("4","9","16","25")
+poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16")
+names(poplabs) <- c("4","9","16")
 p <- ggplot(sig_fits, aes(x=ks_pct,y=mu_50,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
 #  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
 #               linetype="solid",size=1.2,alpha=0.5) +
@@ -180,7 +184,7 @@ p <- ggplot(sig_fits, aes(x=ks_pct,y=mu_50,color=factor(spacing),shape=factor(sp
   stat_poly_eq(formula=formula,
                coef.digits = 3,
                rr.digits = 2,
-               size=1.9,
+               size=2.3,
                eq.with.lhs = "italic(mu[~~50])~`=`~",
                eq.x.rhs = "italic(K[s])",
                label.y = "bottom", label.x = "right",
@@ -189,7 +193,7 @@ p <- ggplot(sig_fits, aes(x=ks_pct,y=mu_50,color=factor(spacing),shape=factor(sp
   geom_point(size=1.1,alpha=0.9)+
   #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
   ylab(TeX("50% Thriving Odds ($\\μ_{50}$)")) +
-  xlab(TeX("Change in substrate affnity ($\\k_{s}$)")) +
+  xlab(TeX("Change in substrate affnity ($\\K_{s}$)")) +
   #ylim(-0.3,0.7)+
   coord_fixed()+
   scale_y_continuous(labels = scales::percent_format(accuracy = 1),
@@ -213,16 +217,26 @@ p <- ggplot(sig_fits, aes(x=ks_pct,y=mu_50,color=factor(spacing),shape=factor(sp
         strip.background = element_blank())+
   facet_grid(cols=vars(nbugs), labeller = labeller(nbugs = poplabs))
 
-ggsave(here::here('output','mu_50_trend.tiff'),width=8,height=3.5, units="in",
-       dpi=330)
-ggsave(here::here('output','mu_50_trend.png'),width=8,height=3.5, units="in",
-       dpi=330)
-ggsave(here::here('output','mu_50_trend.pdf'),width=8,height=3.5, units="in",
-       dpi=330)
+fname <- "mu_50_trend.tiff"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=3.5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "mu_50_trend.png"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=3.5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "mu_50_trend.pdf"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=3.5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 
-
-# -------------------------------------------------------------------------
+# checking to see if non linear issue is due to  using ks, mu pct ------------
 ## checking to see if non linear issue is due to  using ks, mu pct
 ## this is interactive, so uncomment to run
 # Calculate from observations a biggest loser's probabily of thriving

@@ -13,8 +13,9 @@ library(tools) # for MD5 checksums
 library(latex2exp) # use LaTeX expressions for creating axis labels
 library(broom) # helps fits work well with dataframes
 library(ggpmisc) # add regression fits to plot
-library(ggpubr)
-library(ggtext)
+library(ggpubr) # helps with plotting
+library(ggtext) # helps with plotting
+library(RColorBrewer) # palette management in plots
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
@@ -135,17 +136,17 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=f
               stat_poly_eq(formula=formula,
                            coef.digits = 3,
                            rr.digits = 2,
-                           size=1.9,
-                           eq.with.lhs = "italic(mu[~~50])~`=`~",
+                           size=2.2,
+                           eq.with.lhs = "italic(spread[95])~`=`~",
                            eq.x.rhs = "italic(K[s])",
                            label.y = "top", label.x = "left",
                            aes(label = paste(after_stat(eq.label),
                                              after_stat(rr.label), sep = "*\", \"*")))+
               #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
               ylab(TeX("Drift-Fitness co-dominance range ($spread_{95}$)")) +
-              xlab(TeX("Change in substrate affnity ($\\k_{s}$)")) +
+              xlab(TeX("Change in substrate affnity ($\\K_{s}$)")) +
               #ylim(-0.3,0.7)+
-              coord_fixed()+
+              coord_fixed(ylim=c(0.1,1.4))+
               scale_y_continuous(labels = scales::percent_format(accuracy = 1),
                                  breaks = seq(-0.50,1.40,0.10))+
               scale_x_continuous(labels = scales::percent_format(accuracy = 1),
@@ -158,9 +159,9 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=f
                     legend.direction = "horizontal",
                     legend.title = element_text(size = 6),
                     legend.text = element_text(size = 6),
-                    axis.title.x = element_text(size = 8,color="black"),
-                    axis.title.y = element_text(size = 7,color="black"),
-                    axis.text = element_text(size=6,color="black"),
+                    axis.title.x = element_text(size = 9,color="black"),
+                    axis.title.y = element_text(size = 9,color="black"),
+                    axis.text = element_text(size=7,color="black"),
                     axis.text.x = element_text(angle=-45),
                     panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                     panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -200,14 +201,14 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=f
                coef.digits = 3,
                rr.digits = 2,
                size=1.9,
-               eq.with.lhs = "italic(mu[~~50])~`=`~",
+               eq.with.lhs = "italic(spread[~~68])~`=`~",
                eq.x.rhs = "italic(K[s])",
                label.y = "top", label.x = "left",
                aes(label = paste(after_stat(eq.label),
                                  after_stat(rr.label), sep = "*\", \"*")))+
   #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
   ylab(TeX("Sigmoid midpoint ($\\μ_{50}$)")) +
-  xlab(TeX("Change in substrate affnity ($\\k_{s}$)")) +
+  xlab(TeX("Change in substrate affnity ($\\K_{s}$)")) +
   #ylim(-0.3,0.7)+
   coord_fixed()+
   scale_y_continuous(labels = scales::percent_format(accuracy = 1),
@@ -268,8 +269,8 @@ p<-ggplot(data=all_spreads, aes(x=mu_50*100, y=ks_pct*100)) +
   geom_point(data=all_spreads %>% filter(range_pct %in% c(0.68)),
              aes(x=hi*100),shape=3,alpha=0.75)+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label )) +
-  ylab(TeX("Change in substrate affinity ($k_s$)")) +
-  xlab(TeX("Change in maximum specific growth rate ($\\mu_{max}$)"))+
+  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   scale_y_continuous(labels = function(x) paste0(x, "%"),
                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +

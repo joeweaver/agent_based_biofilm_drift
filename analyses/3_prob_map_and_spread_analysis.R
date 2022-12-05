@@ -124,8 +124,8 @@ nbugs_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>intial bacteria<span>")
 }
 
-poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
-names(poplabs) <- c("4","9","16","25")
+poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16")
+names(poplabs) <- c("4","9","16")
 formula <- y ~ poly(x, 1, raw = TRUE)
 p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
               #  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
@@ -189,8 +189,8 @@ log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
                md5sum(floc)))
 
 
-poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
-names(poplabs) <- c("4","9","16","25")
+poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16")
+names(poplabs) <- c("4","9","16")
 p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
   #  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
   #               linetype="solid",size=1.2,alpha=0.5) +
@@ -232,22 +232,24 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=f
   facet_grid(cols=vars(nbugs),rows=vars(range_pct), labeller = labeller(nbugs = poplabs))
 
 fname <- "spread68_trend.tiff"
-floc <- here::here("output",fname)
+floc <- here::here("output","si",fname)
 ggsave(floc, p, width=8,height=4,units="in",dpi=330)
-log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                md5sum(floc)))
 
 fname <- "spread68_trend.png"
-floc <- here::here("output",fname)
+floc <- here::here("output","si",fname)
 ggsave(floc, p, width=8,height=4,units="in",dpi=330)
-log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                md5sum(floc)))
 
+
 fname <- "spread68_trend.pdf"
-floc <- here::here("output",fname)
+floc <- here::here("output","si",fname)
 ggsave(floc, p, width=8,height=4,units="in",dpi=330)
-log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                md5sum(floc)))
+
 
 # Create probability map --------------------------------------------------
 sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))

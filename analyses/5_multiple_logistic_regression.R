@@ -64,6 +64,11 @@ fit_ff <- lm(loglike ~ mu_pct + ks_pct + nbugs + spacing +
             mu_pct*ks_pct*nbugs*spacing, data=log_lik)
 summary(fit_ff)
 
+# fit main-only
+fit_mains <- lm(loglike ~ mu_pct + ks_pct + nbugs + spacing
+               , data=log_lik)
+summary(fit_mains)
+
 # results backwards step removal - highester order interactions with words p-value
 fit_bsr <- lm(loglike ~ mu_pct + ks_pct + nbugs + spacing +
                 mu_pct*spacing +
@@ -76,6 +81,14 @@ preds<-exp(predict(fit))/(1+exp(predict(fit)))
 log_lik$preds <- preds
 log_lik$resid <- log_lik$prob_thrive - log_lik$preds
 
+mlr_rmse<-log_lik %>% mutate(sq_error = resid*resid) %>%
+  group_by(nbugs,spacing) %>%
+  summarise(RMSE = sqrt(mean(sq_error))) %>%
+  mutate(Model="MLR")
+
+log_lik %>% mutate(sq_error = resid*resid) %>% ungroup() %>%
+  summarise(RMSE = sqrt(mean(sq_error)))
+
 spacing_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>diameter spacing<span>")
 }
@@ -83,19 +96,14 @@ nbugs_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>intial bacteria<span>")
 }
 
-
-# spacing becomes more important at greater initial populations
-poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
-names(poplabs) <- c("4","9","16","25")
+poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16")
+names(poplabs) <- c("4","9","16")
 write_csv(log_lik,here::here("output","mlr_predictions.csv"))
 
 phist <- ggplot(data=log_lik,aes(x=resid)) +
   geom_histogram(binwidth=0.025,color="black",fill="skyblue")+
   ylab(TeX("Count")) +
   xlab(TeX("Error in Thrive Transition Chance (Prediction - Simulation)")) +
-  #ylim(-0.3,0.7)+
-  #scale_y_continuous(labels = scales::percent_format(accuracy = 1),
-  #                   breaks = seq(-0.30,0.60,0.10))+
   scale_x_continuous(labels = scales::percent_format(accuracy = 1),
                      breaks = seq(-0.60,0.90,0.10))+
   theme(legend.position = c(0.71,0.85),
@@ -143,82 +151,3 @@ p<-ggplot(data=log_lik, aes(x=mu_50*100, y=ks_pct*100)) +
   facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))
 p
 ggsave(here::here("output","si","mlr_solo_predictions.png"),units="in",width=8,height=8,dpi=330)
-
-
-# ppreds <- ggplot(data=log_lik, aes(x=mu_pct*100, y=ks_pct*100,)) +
-#   geom_raster()+
-#   coord_fixed()+
-#   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
-#                     labels = cut(as.numeric(log_lik$resid),seq(-0.45,0.45,by=0.05)))+
-#   #ylab("Change in substrate affinity (ks)") +
-#   ylab(TeX("Change in substrate affinity ($k_s$)")) +
-#   xlab(TeX("Change in maximum specific growth rate ($\\mu_{max}$)")) +
-#   #xlab("Change in maximum specific growth rate (mu max)")+
-#   scale_y_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   scale_x_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   guides(fill=guide_legend(title="Probability of becoming\na thriving colony\n")) +
-#   facet_grid(rows = vars(nbugs), cols=vars(spacing))+
-#   theme(legend.position = "top",
-#         legend.title = element_text(size = 14),
-#         legend.text = element_text(size = 11),
-#         axis.title = element_text(size = 18),
-#         axis.text = element_text(size=16),
-#         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-#         panel.background = element_blank(), axis.line = element_line(colour = "black"))
-# ppreds
-# ggsave("pred_map_4x4_5.png",units="in",width=8,height=8,dpi=300)
-#
-# preal <- ggplot(data=lik%>%filter(spacing %in% c(5))%>%filter(nbugs %in% c(16)), aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
-#   geom_raster()+
-#   coord_fixed()+
-#   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
-#                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"))+
-#   #ylab("Change in substrate affinity (ks)") +
-#   ylab(TeX("Change in substrate affinity ($k_s$)")) +
-#   xlab(TeX("Change in maximum specific growth rate ($\\mu_{max}$)")) +
-#   #xlab("Change in maximum specific growth rate (mu max)")+
-#   scale_y_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   scale_x_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   guides(fill=guide_legend(title="Probability of becoming\na thriving colony\n")) +
-#   theme(legend.position = "top",
-#         legend.title = element_text(size = 14),
-#         legend.text = element_text(size = 11),
-#         axis.title = element_text(size = 18),
-#         axis.text = element_text(size=16),
-#         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-#         panel.background = element_blank(), axis.line = element_line(colour = "black"))
-# preal
-#
-#
-# library(cowplot)
-# plot_grid(preal, ppreds, labels = c('real', 'predicted'), label_size = 12)
-# bb<-no_inf%>%filter(spacing %in% c(5))%>%filter(nbugs %in% c(16))
-# cut(bb$resid,c(-0.5,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.5))
-# bbp <- ggplot(data=no_inf%>%filter(spacing %in% c(5))%>%filter(N %in% c(16)), aes(x=mu_pct*100, y=ks_pct*100,fill=cut(resid,c(-0.45,-0.3,-0.15,0,0.15,0.3,0.45)))) +
-#   geom_tile()+
-#   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", '#abd9e9','#74add1','#4575b4','#225ea8'),
-#                     labels = c("-45% to -30%","-30% to -15%","-15% to 0%","0% to 15%","15% to 30%","30% to 45%"))+
-#   #ylab("Change in substrate affinity (ks)") +
-#   ylab(TeX("Change in substrate affinity ($k_s$)")) +
-#   xlab(TeX("Change in maximum specific growth rate ($\\mu_{max}$)")) +
-#   #xlab("Change in maximum specific growth rate (mu max)")+
-#   scale_y_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   scale_x_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   guides(fill=guide_legend(title="Prediction Difference (Absolute)")) +
-#   theme(legend.position = "top",
-#         legend.title = element_text(size = 14),
-#         legend.text = element_text(size = 11),
-#         axis.title = element_text(size = 18),
-#         axis.text = element_text(size=16),
-#         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-#         panel.background = element_blank(), axis.line = element_line(colour = "black"))
-# bbp
-#
-# ggsave("pred_diffs_4x4_5.png",units="in",width=8,height=8,dpi=300)
-

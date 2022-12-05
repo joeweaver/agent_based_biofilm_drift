@@ -12,11 +12,9 @@ library(ggh4x) # extend ggplot2
 library(tools) # for MD5 checksums
 library(latex2exp) # use LaTeX expressions for creating axis labels
 library(broom) # helps fits work well with dataframes
-library(purrrwhich )
-library(RColorBrewer)
+library(ggpmisc) # add regression fits to plot
 library(ggpubr)
 library(ggtext)
-
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
@@ -112,29 +110,10 @@ all_spreads_1sd<-rbind(get_spreads(sig_fits,4,2.5,0.68),
 all_spreads <- rbind(all_spreads_1sd,all_spreads_2d) %>% mutate(ks_pct = ks/base_ks -1)
 write_csv(all_spreads,here::here("output","spread_fits.csv"))
 
-
-# ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread))+geom_point()+
-#   geom_smooth(method="lm")+
-#   facet_grid(cols=vars(spacing),rows=vars(nbugs))+
-#   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
-#
-# ss<-all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs == 16) %>%filter(spacing == 10)
-# lmf <- lm(spread~ks_pct,ss)
-# lmf
-# summary(lmf)
-# plot(ss$ks_pct,ss$spread)
-# plot(lmf)
-#
-# ggplot(all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs %in% c(9)),aes(x=spacing,y=mu_50))+geom_point()+
-#   geom_smooth(method="lm")+
-#   facet_grid(cols=vars(nbugs),rows=vars(ks_pct))+
-#   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
-#
-# ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread,color=factor(range_pct)))+geom_point()+
-#   geom_smooth(method="lm")+
-#   facet_grid(cols=vars(spacing),rows=vars(nbugs))+
-#   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
-
+fname <- "spread_fits.csv"
+floc <- here::here("output",fname)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 # Plot spread95 and spread68 linear relations -----------------------------
 
@@ -147,6 +126,7 @@ nbugs_label <- function(string) {
 
 poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
 names(poplabs) <- c("4","9","16","25")
+formula <- y ~ poly(x, 1, raw = TRUE)
 p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
               #  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
               #               linetype="solid",size=1.2,alpha=0.5) +
@@ -188,68 +168,88 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=f
                     strip.background = element_blank())+
               facet_grid(cols=vars(nbugs), labeller = labeller(nbugs = poplabs))
 
-            ggsave(here::here('output','spread95_trend.tiff'),width=8,height=3.5, units="in",
-                   dpi=330)
-            ggsave(here::here('output','spread95_trend.png'),width=8,height=3.5, units="in",
-                   dpi=330)
-            ggsave(here::here('output','spread95_trend.pdf'),width=8,height=3.5, units="in",
-                   dpi=330)
+fname <- "spread95_trend.tiff"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
-            # spacing becomes more important at greater initial populations
-            poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
-            names(poplabs) <- c("4","9","16","25")
-            p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
-              #  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
-              #               linetype="solid",size=1.2,alpha=0.5) +
-              geom_smooth(method='lm', formula= y~x+x*x, se=FALSE,size=0.4)+
-              geom_point(size=1.1,alpha=0.9)+
-              stat_poly_eq(formula=formula,
-                           coef.digits = 3,
-                           rr.digits = 2,
-                           size=1.9,
-                           eq.with.lhs = "italic(mu[~~50])~`=`~",
-                           eq.x.rhs = "italic(K[s])",
-                           label.y = "top", label.x = "left",
-                           aes(label = paste(after_stat(eq.label),
-                                             after_stat(rr.label), sep = "*\", \"*")))+
-              #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
-              ylab(TeX("Sigmoid midpoint ($\\μ_{50}$)")) +
-              xlab(TeX("Change in substrate affnity ($\\k_{s}$)")) +
-              #ylim(-0.3,0.7)+
-              coord_fixed()+
-              scale_y_continuous(labels = scales::percent_format(accuracy = 1),
-                                 breaks = seq(-0.50,1.40,0.10))+
-              scale_x_continuous(labels = scales::percent_format(accuracy = 1),
-                                 breaks = seq(-0.50,0.50,0.10))+
-              scale_color_brewer(palette = "Dark2")+
-              guides(color=guide_legend(title="Spacing"),
-                     shape=guide_legend(title="Spacing"),
-                     linetype=guide_legend(title="Spacing")) +
-              theme(legend.position = "top",#c(0.5,0.85),
-                    legend.direction = "horizontal",
-                    legend.title = element_text(size = 6),
-                    legend.text = element_text(size = 6),
-                    axis.title = element_text(size = 9,color="black"),
-                    axis.text = element_text(size=6,color="black"),
-                    axis.text.x = element_text(angle=-45),
-                    panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                    panel.background = element_blank(), axis.line = element_line(colour = "black"),
-                    strip.text = element_text(size=8,color="black"),
-                    strip.background = element_blank())+
-              facet_grid(cols=vars(nbugs),rows=vars(range_pct), labeller = labeller(nbugs = poplabs))
 
-            ggsave(here::here('output','spread68_trend.tiff'),width=8,height=3.5, units="in",
-                   dpi=330)
-            ggsave(here::here('output','spread68_trend.png'),width=8,height=3.5, units="in",
-                   dpi=330)
-            ggsave(here::here('output','spread68_trend.pdf'),width=8,height=3.5, units="in",
-                   dpi=330)
+fname <- "spread95_trend.png"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
+
+fname <- "spread95_trend.pdf"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+
+poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
+names(poplabs) <- c("4","9","16","25")
+p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
+  #  geom_segment(aes(xend = ks_pct, yend = predicted_mu_50), color="black",
+  #               linetype="solid",size=1.2,alpha=0.5) +
+  geom_smooth(method='lm', formula= y~x+x*x, se=FALSE,size=0.4)+
+  geom_point(size=1.1,alpha=0.9)+
+  stat_poly_eq(formula=formula,
+               coef.digits = 3,
+               rr.digits = 2,
+               size=1.9,
+               eq.with.lhs = "italic(mu[~~50])~`=`~",
+               eq.x.rhs = "italic(K[s])",
+               label.y = "top", label.x = "left",
+               aes(label = paste(after_stat(eq.label),
+                                 after_stat(rr.label), sep = "*\", \"*")))+
+  #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
+  ylab(TeX("Sigmoid midpoint ($\\μ_{50}$)")) +
+  xlab(TeX("Change in substrate affnity ($\\k_{s}$)")) +
+  #ylim(-0.3,0.7)+
+  coord_fixed()+
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1),
+                     breaks = seq(-0.50,1.40,0.10))+
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1),
+                     breaks = seq(-0.50,0.50,0.10))+
+  scale_color_brewer(palette = "Dark2")+
+  guides(color=guide_legend(title="Spacing"),
+         shape=guide_legend(title="Spacing"),
+         linetype=guide_legend(title="Spacing")) +
+  theme(legend.position = "top",#c(0.5,0.85),
+        legend.direction = "horizontal",
+        legend.title = element_text(size = 6),
+        legend.text = element_text(size = 6),
+        axis.title = element_text(size = 9,color="black"),
+        axis.text = element_text(size=6,color="black"),
+        axis.text.x = element_text(angle=-45),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        strip.text = element_text(size=8,color="black"),
+        strip.background = element_blank())+
+  facet_grid(cols=vars(nbugs),rows=vars(range_pct), labeller = labeller(nbugs = poplabs))
+
+fname <- "spread68_trend.tiff"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "spread68_trend.png"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "spread68_trend.pdf"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 # Create probability map --------------------------------------------------
-
-
-
 sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 probs <- thrive_probabilities(sim_results) %>% mutate(likely=prob_thrive/(1-prob_thrive+1e-6)+1e-6,
                                                    loglike=log(likely))
@@ -285,9 +285,21 @@ p<-ggplot(data=all_spreads, aes(x=mu_50*100, y=ks_pct*100)) +
         strip.background = element_rect(color="black", fill="white", linetype="solid"),
         strip.text.x = element_markdown(size=10.5),
         strip.text.y = element_markdown(size=12))
-ggsave(plot=p,here::here("output","prob_map.tiff"),width=8,height=9.5, units="in",
-                     dpi=330)
-ggsave(plot=p,here::here("output","prob_map.png"),width=8,height=9.5, units="in",
-       dpi=330)
-ggsave(plot=p,here::here("output","prob_map.pdf"),width=8,height=9.5, units="in",
-       dpi=330)
+
+fname <- "prob_map.tiff"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=9.5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "prob_map.png"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=9.5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "prob_map.pdf"
+floc <- here::here("output",fname)
+ggsave(floc, p, width=8,height=9.5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))

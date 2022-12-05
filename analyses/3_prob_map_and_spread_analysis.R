@@ -1,29 +1,35 @@
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(latex2exp)
-library(here)
-library(broom)
-library(tidyr)
+# Generates the major probability map, also performs spread analysis
+
+library(readr) # handle csv file import
+library(here)  # manage paths, keep @JennyBryan from incinerating our machine
+library(tidyr) # used for pivots
+library(dplyr)   # work with tidy data
+library(gt) # table generation
+library(logger) # record info
+library(magrittr) # for %<>% construct
+library(ggplot2) # figure generation
+library(ggh4x) # extend ggplot2
+library(tools) # for MD5 checksums
+library(latex2exp) # use LaTeX expressions for creating axis labels
+library(broom) # helps fits work well with dataframes
 library(purrrwhich )
 library(RColorBrewer)
 library(ggpubr)
 library(ggtext)
 
-# Checking linearity assumption for mu_50 and steepness
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
 # if not, you may need to run 0_download_sim_results.R first
 #
 # need to have output/sigmoidfits.csv
-# if not, you have to run 1_sigmoid_fitting.R
+# if not, you have to run 2_sigmoid_fitting.R
 
 # load common code
 source('common.R')
 
 # Set up and start logging ---------
-start_logging("3_spread_analysis.log")
+start_logging("3_prob_map_and_spread_analysis.log")
 
 # Create relevant output dirs ---------
 create_dir_if_not_exist(here::here('output'))
@@ -33,10 +39,14 @@ create_dir_if_not_exist(here::here('output','eda','spread_analysis'))
 # read the values of the fitted sigmoids
 sig_fits <- read_csv(here::here("output","sigmoid_fits.csv"))
 
+
+# Functions for getting per-sigmoid spreads -------------------------------
+
 # add 1 to avoid 0 values which can blow up the optim call
 delta_logistic<-function(mu_pct,delta,mu_50,steep){
   return(1+abs(delta-logistic_fun(mu_pct, mu_50, steep)))
 }
+
 
 sig_spread<-function(ub,lb,df){
   hi=optim(par=c(df$mu_50), delta_logistic, method="Brent",
@@ -68,14 +78,13 @@ get_spreads<-function(.data,N,s,range_pct){
   for(ks in unique(.data$ks)){
     sf<-select_sig_fit(.data,N,s,ks)
     spread<-sig_spread(upct,lpct,sf)
-    #print(glue::glue("ks: {ks} {spread$hi} {spread$lo} {spread$hi-spread$lo} "))
     res<-rbind(res,cbind(sf,spread) %>% mutate(range_pct=range_pct, spread=hi-lo))
-
-
   }
   return(res)
 }
 
+
+# Calculate spread95 and spread 68, write to file -----------------------------
 all_spreads_2d<-rbind(get_spreads(sig_fits,4,2.5,0.95),
                     get_spreads(sig_fits,4,5,0.95),
                     get_spreads(sig_fits,4,10,0.95),
@@ -86,12 +95,7 @@ all_spreads_2d<-rbind(get_spreads(sig_fits,4,2.5,0.95),
 
                     get_spreads(sig_fits,16,2.5,0.95),
                     get_spreads(sig_fits,16,5,0.95),
-                    get_spreads(sig_fits,16,10,0.95),
-
-                    # TODO uncomment when runs complete
-                    #get_spreads(sig_fits,25,2.5,0.90)
-                    get_spreads(sig_fits,25,5,0.95))
-                    #get_spreads(sig_fits,25,10,0.90)
+                    get_spreads(sig_fits,16,10,0.95))
 
 all_spreads_1sd<-rbind(get_spreads(sig_fits,4,2.5,0.68),
                    get_spreads(sig_fits,4,5,0.68),
@@ -103,37 +107,36 @@ all_spreads_1sd<-rbind(get_spreads(sig_fits,4,2.5,0.68),
 
                    get_spreads(sig_fits,16,2.5,0.68),
                    get_spreads(sig_fits,16,5,0.68),
-                   get_spreads(sig_fits,16,10,0.68),
-
-                   # TODO uncomment when runs complete
-                   #get_spreads(sig_fits,25,2.5,0.90)
-                   get_spreads(sig_fits,25,5,0.68))
+                   get_spreads(sig_fits,16,10,0.68))
 
 all_spreads <- rbind(all_spreads_1sd,all_spreads_2d) %>% mutate(ks_pct = ks/base_ks -1)
-
-ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread))+geom_point()+
-  geom_smooth(method="lm")+
-  facet_grid(cols=vars(spacing),rows=vars(nbugs))+
-  stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
-
-ss<-all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs == 16) %>%filter(spacing == 10)
-lmf <- lm(spread~ks_pct,ss)
-lmf
-summary(lmf)
-plot(ss$ks_pct,ss$spread)
-plot(lmf)
-
-ggplot(all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs %in% c(9)),aes(x=spacing,y=mu_50))+geom_point()+
-  geom_smooth(method="lm")+
-  facet_grid(cols=vars(nbugs),rows=vars(ks_pct))+
-  stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
-
-ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread,color=factor(range_pct)))+geom_point()+
-  geom_smooth(method="lm")+
-  facet_grid(cols=vars(spacing),rows=vars(nbugs))+
-  stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
-
 write_csv(all_spreads,here::here("output","spread_fits.csv"))
+
+
+# ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread))+geom_point()+
+#   geom_smooth(method="lm")+
+#   facet_grid(cols=vars(spacing),rows=vars(nbugs))+
+#   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
+#
+# ss<-all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs == 16) %>%filter(spacing == 10)
+# lmf <- lm(spread~ks_pct,ss)
+# lmf
+# summary(lmf)
+# plot(ss$ks_pct,ss$spread)
+# plot(lmf)
+#
+# ggplot(all_spreads %>% filter(range_pct %in% c(0.95)) %>% filter(nbugs %in% c(9)),aes(x=spacing,y=mu_50))+geom_point()+
+#   geom_smooth(method="lm")+
+#   facet_grid(cols=vars(nbugs),rows=vars(ks_pct))+
+#   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
+#
+# ggplot(all_spreads %>% filter(range_pct %in% c(0.95)),aes(x=ks_pct,y=spread,color=factor(range_pct)))+geom_point()+
+#   geom_smooth(method="lm")+
+#   facet_grid(cols=vars(spacing),rows=vars(nbugs))+
+#   stat_cor(aes(label = ..rr.label..), color = "red", geom = "label")
+
+
+# Plot spread95 and spread68 linear relations -----------------------------
 
 spacing_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>diameter spacing<span>")
@@ -142,8 +145,6 @@ nbugs_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>intial bacteria<span>")
 }
 
-
-# spacing becomes more important at greater initial populations
 poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16","Initial Population: 25")
 names(poplabs) <- c("4","9","16","25")
 p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=factor(spacing),shape=factor(spacing),linetype=factor(spacing))) +
@@ -244,7 +245,11 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=f
             ggsave(here::here('output','spread68_trend.pdf'),width=8,height=3.5, units="in",
                    dpi=330)
 
-# TODO break this out into its own
+
+# Create probability map --------------------------------------------------
+
+
+
 sim_results <- get_all_results(here::here("data","sweep_colony_outcomes"))
 probs <- thrive_probabilities(sim_results) %>% mutate(likely=prob_thrive/(1-prob_thrive+1e-6)+1e-6,
                                                    loglike=log(likely))

@@ -7,6 +7,7 @@ library(dplyr) # osf can be navigated using dplyr style stuff
 library(here)  # manage paths, keep @JennyBryan from incinerating our machine
 library(ggplot2) # plotting
 library(RColorBrewer) # color palette management
+library(tools) # for MD5 checksums
 
 # precondition
 # ./data/sweep_colony_outcomes should contain CSVs describing simulation results
@@ -144,18 +145,26 @@ per_run_sigmoid_plots <- function(sf,pthrive, N, s) {
           legend.text = element_text(size=4),
           legend.title = element_text(size=6))
 
-  ggsave(here::here("output","si"
-                    ,glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.tiff")),
-         p,
-         width=3.75,height=3.75,units="in",dpi=330)
-  ggsave(here::here("output","si"
-                    ,glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.pdf")),
-         p,
-         width=3.75,height=3.75,units="in",dpi=330)
-  ggsave(here::here("output","si"
-                    ,glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.png")),
-         p,
-         width=3.75,height=3.75,units="in",dpi=330)
+  fname <- glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.tiff")
+  floc <- here::here("output","si",fname)
+  file.path("output","si",fname)
+  ggsave(fname, p, width=3.75,height=3.75,units="in",dpi=330)
+  log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+                 md5sum(floc)))
+
+  fname <- glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.png")
+  floc <- here::here("output","si",fname)
+  file.path("output","si",fname)
+  ggsave(fname, p, width=3.75,height=3.75,units="in",dpi=330)
+  log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+                 md5sum(floc)))
+
+  fname <- glue::glue("sigmoid_fits_{sqrt(N)}x{sqrt(N)}_{s}.pdf")
+  floc <- here::here("output","si",fname)
+  file.path("output","si",fname)
+  ggsave(fname, p, width=3.75,height=3.75,units="in",dpi=330)
+  log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+                 md5sum(floc)))
 }
 
 per_run_sigmoid_plots(sigmoid_fits,probs,4,2.5)

@@ -286,38 +286,3 @@ ggsave(plot=p,here::here("output","prob_map.png"),width=8,height=9.5, units="in"
        dpi=330)
 ggsave(plot=p,here::here("output","prob_map.pdf"),width=8,height=9.5, units="in",
        dpi=330)
-
-# ggplot(data=all_spreads, aes(x=mu_50*100, y=ks_pct*100)) +
-#   geom_segment(data=all_spreads %>% filter(range_pct %in% c(0.95)),
-#                aes(x=lo*100,xend=hi*100,y=ks_pct*100,yend=ks_pct*100))+
-#   geom_point()+
-#   geom_point(data=all_spreads %>% filter(range_pct %in% c(0.68)),
-#              aes(x=lo*100),shape=21)+
-#   geom_point(data=all_spreads %>% filter(range_pct %in% c(0.68)),
-#              aes(x=hi*100),shape=21)+
-#   facet_grid(rows = vars(nbugs), cols=vars(spacing))+
-#   ylab(TeX("Change in substrate affinity ($k_s$)")) +
-#   xlab(TeX("Change in maximum specific growth rate ($\\mu_{max}$)"))+
-#   coord_cartesian(xlim=c(-50,50))
-#
-# p <- ggplot(data=prob_thrive, aes(x=mu_pct*100, y=ks_pct*100,fill=cut(prob_thrive,c(-0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
-#   geom_tile()+
-#   scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
-#                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"))+
-#   #ylab("Change in substrate affinity (ks)") +
-#   ylab(TeX("Change in substrate affinity ($k_s$)")) +
-#   xlab(TeX("Change in maximum specific growth rate ($\\mu_{max}$)")) +
-#   #xlab("Change in maximum specific growth rate (mu max)")+
-#   scale_y_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   scale_x_continuous(labels = function(x) paste0(x, "%"),
-#                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
-#   guides(fill=guide_legend(title="Probability of becoming\na thriving colony\n")) +
-#   theme(legend.position = "top",
-#         legend.title = element_text(size = 14),
-#         legend.text = element_text(size = 11),
-#         axis.title = element_text(size = 18),
-#         axis.text = element_text(size=16),
-#         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-#         panel.background = element_blank(), axis.line = element_line(colour = "black")) + facet_grid(rows = vars(nbugs), cols=vars(spacing))
-# p

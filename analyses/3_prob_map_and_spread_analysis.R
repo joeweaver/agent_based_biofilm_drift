@@ -210,7 +210,7 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=f
   ylab(TeX("Sigmoid midpoint ($\\μ_{50}$)")) +
   xlab(TeX("Change in substrate affnity ($\\K_{s}$)")) +
   #ylim(-0.3,0.7)+
-  coord_fixed()+
+  coord_fixed(ylim=c(0,0.75))+
   scale_y_continuous(labels = scales::percent_format(accuracy = 1),
                      breaks = seq(-0.50,1.40,0.10))+
   scale_x_continuous(labels = scales::percent_format(accuracy = 1),

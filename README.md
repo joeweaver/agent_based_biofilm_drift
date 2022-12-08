@@ -78,27 +78,34 @@ BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
 LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
 
 locale:
-[1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C               LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8     LC_MONETARY=en_GB.UTF-8
-[6] LC_MESSAGES=en_GB.UTF-8    LC_PAPER=en_GB.UTF-8       LC_NAME=C                  LC_ADDRESS=C               LC_TELEPHONE=C
-[11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+ [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C               LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+ [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8    LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] tools     stats     graphics  grDevices utils     datasets  methods   base
+[1] tools     stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] stringr_1.4.0      logger_0.2.2       ggpp_0.4.5         viridis_0.6.2      viridisLite_0.4.0  patchwork_1.1.1    cowplot_1.1.1
-[8] ggtext_0.1.1       ggpubr_0.4.0       tidymv_3.3.2       itsadug_2.4.1      plotfunctions_1.4  mgcv_1.8-40        nlme_3.1-158
-[15] RColorBrewer_1.1-3 tidyr_1.2.0        broom_1.0.0        here_1.0.1         latex2exp_0.9.4    ggplot2_3.3.6      dplyr_1.0.9
-[22] readr_2.1.2
+ [1] stringr_1.4.0      viridis_0.6.2      viridisLite_0.4.0  patchwork_1.1.1    cowplot_1.1.1      tidymv_3.3.2      
+ [7] itsadug_2.4.1      plotfunctions_1.4  mgcv_1.8-40        nlme_3.1-158       purrr_0.3.4        ggtext_0.1.1      
+[13] ggpubr_0.4.0       ggpmisc_0.5.1      ggpp_0.4.5         broom_1.0.0        latex2exp_0.9.4    ggh4x_0.2.2       
+[19] magrittr_2.0.3     logger_0.2.2       gt_0.6.0           tidyr_1.2.0        RColorBrewer_1.1-3 readr_2.1.2       
+[25] here_1.0.1         dplyr_1.0.9        osfr_0.2.8         gifski_1.6.6-1     transformr_0.1.4   gganimate_1.0.8   
+[31] ggplot2_3.3.6     
 
 loaded via a namespace (and not attached):
-[1] Rcpp_1.0.9        lattice_0.20-45   assertthat_0.2.1  rprojroot_2.0.3   digest_0.6.29     utf8_1.2.2        R6_2.5.1          backports_1.4.1
-[9] pillar_1.7.0      rlang_1.0.4       rstudioapi_0.14   car_3.1-0         Matrix_1.5-1      textshaping_0.3.6 labeling_0.4.2    splines_4.2.0
-[17] bit_4.0.4         munsell_0.5.0     gridtext_0.1.4    compiler_4.2.0    systemfonts_1.0.4 pkgconfig_2.0.3   tidyselect_1.1.2  tibble_3.1.7
-[25] gridExtra_2.3     fansi_1.0.3       crayon_1.5.1      tzdb_0.3.0        withr_2.5.0       grid_4.2.0        gtable_0.3.0      lifecycle_1.0.1
-[33] DBI_1.1.3         magrittr_2.0.3    scales_1.2.1      cli_3.4.1         stringi_1.7.8     vroom_1.5.7       carData_3.0-5     farver_2.1.1
-[41] ggsignif_0.6.3    xml2_1.3.3        ellipsis_0.3.2    ragg_1.2.4        generics_0.1.3    vctrs_0.4.1       bit64_4.0.5       glue_1.6.2
-[49] markdown_1.1      purrr_0.3.4       hms_1.1.1         abind_1.4-5       parallel_4.2.0    colorspace_2.0-3  rstatix_0.7.0
+ [1] fs_1.5.2           sf_1.0-9           progress_1.2.2     httr_1.4.3         rprojroot_2.0.3    backports_1.4.1   
+ [7] utf8_1.2.2         R6_2.5.1           KernSmooth_2.23-20 DBI_1.1.3          colorspace_2.0-3   withr_2.5.0       
+[13] gridExtra_2.3      tidyselect_1.1.2   prettyunits_1.1.1  curl_4.3.2         compiler_4.2.0     cli_3.4.1         
+[19] quantreg_5.94      SparseM_1.81       xml2_1.3.3         scales_1.2.1       classInt_0.4-8     proxy_0.4-27      
+[25] digest_0.6.29      pkgconfig_2.0.3    htmltools_0.5.2    fastmap_1.1.0      rlang_1.0.4        rstudioapi_0.14   
+[31] httpcode_0.3.0     farver_2.1.1       generics_0.1.3     jsonlite_1.8.0     car_3.1-0          Matrix_1.5-1      
+[37] Rcpp_1.0.9         munsell_0.5.0      fansi_1.0.3        abind_1.4-5        lifecycle_1.0.1    stringi_1.7.8     
+[43] carData_3.0-5      MASS_7.3-57        grid_4.2.0         crayon_1.5.1       lattice_0.20-45    splines_4.2.0     
+[49] gridtext_0.1.4     hms_1.1.1          pillar_1.7.0       ggsignif_0.6.3     lpSolve_5.6.17     crul_1.3          
+[55] glue_1.6.2         vctrs_0.4.1        tzdb_0.3.0         tweenr_2.0.2       MatrixModels_0.5-1 gtable_0.3.0      
+[61] assertthat_0.2.1   cachem_1.0.6       e1071_1.7-12       rstatix_0.7.0      class_7.3-20       survival_3.3-1    
+[67] tibble_3.1.7       memoise_2.0.1      units_0.8-0        ellipsis_0.3.2   
 ```
 
 

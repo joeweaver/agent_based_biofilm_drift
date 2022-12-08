@@ -18,6 +18,7 @@ library(cowplot) # plotting
 library(patchwork) # plotting
 library(viridis) # plotting
 library(ggpp) # plotting
+library(tools) #md5sum
 
 
 # precondition
@@ -61,9 +62,9 @@ probs$spacing <- as.double(probs$spacing)# factor(probs$spacing)
 # summary(gam.no_i.all_smooth )$s.table
 # AIC(gam.no_i.all_smooth )
 # k.check(gam.no_i.all_smooth)
-# fname <- here::here("output","fits","gam.no_i.all_smooth.rds")
+# fname <- here::here("output","fits","gam.no_i.all_smooth")
 # write_rds(gam.no_i.all_smooth,fname)
-# log_info(paste('Wrote', file.path("output","fits","gam.no_i.all_smooth.rds"), ' MD5Sum: ',
+# log_info(paste('Wrote', file.path("output","fits","gam.no_i.all_smooth"), ' MD5Sum: ',
 #                md5sum(fname)))
 #
 # # # no-interact, all linear
@@ -124,22 +125,22 @@ probs$spacing <- as.double(probs$spacing)# factor(probs$spacing)
 #                md5sum(fname)))
 #
 # # # w 3way interact, all smooth  (except spacing in case of nbugsxspacing)
-gam.3way_i.all_smooth  <- gam(prob_thrive ~ s(mu_pct) + s(ks_pct)+s(nbugs,k=3)+s(spacing,k=3)+
-                                 s(mu_pct,ks_pct) + s(mu_pct,nbugs) + s(mu_pct,spacing) +
-                                 s(ks_pct,nbugs) + s(ks_pct,spacing) +
-                                 s(nbugs,by=spacing,k=3)+
-                                 te(mu_pct, ks_pct,spacing,d=c(1,2)) +
-                                 te(mu_pct, ks_pct,nbugs,d=c(1,2))
-                                 , data = probs, method = "REML")
-summary(gam.3way_i.all_smooth  )
-summary(gam.3way_i.all_smooth  )$p.table
-summary(gam.3way_i.all_smooth  )$s.table
-AIC(gam.3way_i.all_smooth  )
-k.check(gam.3way_i.all_smooth )
-fname <- here::here("output","fits","gam.3way_i.all_smooth")
-write_rds(gam.3way_i.all_smooth,fname)
-log_info(paste('Wrote', file.path("output","fits","gam.3way_i.all_smooth"), ' MD5Sum: ',
-               md5sum(fname)))
+# gam.3way_i.all_smooth  <- gam(prob_thrive ~ s(mu_pct) + s(ks_pct)+s(nbugs,k=3)+s(spacing,k=3)+
+#                                  s(mu_pct,ks_pct) + s(mu_pct,nbugs) + s(mu_pct,spacing) +
+#                                  s(ks_pct,nbugs) + s(ks_pct,spacing) +
+#                                  s(nbugs,by=spacing,k=3)+
+#                                  te(mu_pct, ks_pct,spacing,d=c(1,2)) +
+#                                  te(mu_pct, ks_pct,nbugs,d=c(1,2))
+#                                  , data = probs, method = "REML")
+# summary(gam.3way_i.all_smooth  )
+# summary(gam.3way_i.all_smooth  )$p.table
+# summary(gam.3way_i.all_smooth  )$s.table
+# AIC(gam.3way_i.all_smooth  )
+# k.check(gam.3way_i.all_smooth )
+# fname <- here::here("output","fits","gam.3way_i.all_smooth")
+# write_rds(gam.3way_i.all_smooth,fname)
+# log_info(paste('Wrote', file.path("output","fits","gam.3way_i.all_smooth"), ' MD5Sum: ',
+#                md5sum(fname)))
 #
 # # # w 3way interact, linear crowd
 # gam.3way_i.linear_crowd  <- gam(prob_thrive ~ s(mu_pct) + s(ks_pct)+nbugs+spacing+
@@ -160,25 +161,29 @@ log_info(paste('Wrote', file.path("output","fits","gam.3way_i.all_smooth"), ' MD
 #                md5sum(fname)))
 
 # backwards step reduction, all smooth  (except spacing in case of nbugsxspacing)
-gam.bsr.3way_i.all_smooth  <- gam(prob_thrive ~ s(mu_pct) + s(ks_pct)+s(nbugs,k=3)+s(spacing,k=3)+
-                                    s(mu_pct,ks_pct,k=60) + s(mu_pct,spacing) +
-                                    s(ks_pct,spacing) +
-                                    s(nbugs,by=spacing,k=3)+
-                                    te(mu_pct, ks_pct,spacing,d=c(1,2)) +
-                                    te(mu_pct, ks_pct,nbugs,d=c(1,2))
-                                  , data = probs, method = "REML")
-summary(gam.bsr.3way_i.all_smooth  )
-summary(gam.bsr.3way_i.all_smooth  )$p.table
-summary(gam.bsr.3way_i.all_smooth  )$s.table
-AIC(gam.bsr.3way_i.all_smooth  )
-k.check(gam.bsr.3way_i.all_smooth )
-fname <- here::here("output","fits","gam.bsr.3way_i.all_smooth")
-write_rds(gam.bsr.3way_i.all_smooth,fname)
-log_info(paste('Wrote', file.path("output","fits","gam.bsr.3way_i.all_smooth"), ' MD5Sum: ',
-               md5sum(fname)))
+# gam.bsr.3way_i.all_smooth  <- gam(prob_thrive ~ s(mu_pct) + s(ks_pct)+s(nbugs,k=3)+s(spacing,k=3)+
+#                                     s(mu_pct,ks_pct,k=60) + s(mu_pct,spacing) +
+#                                     s(ks_pct,spacing) +
+#                                     s(nbugs,by=spacing,k=3)+
+#                                     te(mu_pct, ks_pct,spacing,d=c(1,2)) +
+#                                     te(mu_pct, ks_pct,nbugs,d=c(1,2))
+#                                   , data = probs, method = "REML")
+# summary(gam.bsr.3way_i.all_smooth  )
+# summary(gam.bsr.3way_i.all_smooth  )$p.table
+# summary(gam.bsr.3way_i.all_smooth  )$s.table
+# AIC(gam.bsr.3way_i.all_smooth  )
+# k.check(gam.bsr.3way_i.all_smooth )
+# fname <- here::here("output","fits","gam.bsr.3way_i.all_smooth")
+# write_rds(gam.bsr.3way_i.all_smooth,fname)
+# log_info(paste('Wrote', file.path("output","fits","gam.bsr.3way_i.all_smooth"), ' MD5Sum: ',
+#                md5sum(fname)))
+
+# read the model
+gam.bsr.3way_i.all_smooth<-read_rds( here::here("output","fits","gam.bsr.3way_i.all_smooth"))
 
 # Make predictions from selected model ------------------------------------
 log_info("Using gam.bsr.3way_i.all_smooth as fitted model")
+
 pg<-predict_gam(gam.bsr.3way_i.all_smooth ,values=list(mu_pct = unique(probs$mu_pct),
                                          ks_pct =  unique(probs$ks_pct),
                                  nbugs=unique(probs$nbugs),
@@ -189,6 +194,12 @@ combined <-left_join(x=probs,y=pg) %>%
 
 
 # Plot histogram of errors ------------------------------------------------
+spacing_label <- function(string) {
+  glue::glue("<span style = 'color:#585858;'>Spacing:&nbsp; <span><span style = 'color:#000000;'> {string}<span> ")
+}
+nbugs_label <- function(string) {
+  glue::glue("<span style = 'color:#585858;'>Ini. Pop.:&nbsp;<span><span style = 'color:#000000;'> {string}<span> ")
+}
 
 phist <- ggplot(data=combined,aes(x=pred_error)) +
   geom_histogram(binwidth=0.025,color="black",fill="skyblue")+
@@ -210,19 +221,28 @@ phist <- ggplot(data=combined,aes(x=pred_error)) +
         strip.text.x = element_markdown(size=10.5),
         strip.text.y = element_markdown(size=12)) +
   facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))
-ggsave(here::here("output","si","gam_pred_error_hist.png"),units="in",width=8,height=8,dpi=330)
 
+fname <- "gam_pred_error_hist.png"
+floc <- here::here("output","si",fname)
+ggsave(floc, phist, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
-spacing_label <- function(string) {
-  glue::glue("<span style = 'color:#585858;'>Spacing:&nbsp; <span><span style = 'color:#000000;'> {string}<span> ")
-}
-nbugs_label <- function(string) {
-  glue::glue("<span style = 'color:#585858;'>Ini. Pop.:&nbsp;<span><span style = 'color:#000000;'> {string}<span> ")
-}
+fname <- "gam_pred_error_hist.pdf"
+floc <- here::here("output","si",fname)
+ggsave(floc, phist, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "gam_pred_error_hist.tiff"
+floc <- here::here("output","si",fname)
+ggsave(floc, phist, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 
 # Create a large-scale standalone plot for SI ---------------
-poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16")
+poplabs <- c("Ini. Pop.: 4", "Ini. Pop.: 9", "Ini. Pop.: 16")
 names(poplabs) <- c("4","9","16")
 p<-ggplot(data=combined, aes(x=mu_50*100, y=ks_pct*100)) +
   geom_raster(data=combined,aes(x=mu_pct*100, y=ks_pct*100,fill=cut(fit,c(-0.11,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
@@ -251,7 +271,24 @@ p<-ggplot(data=combined, aes(x=mu_50*100, y=ks_pct*100)) +
         strip.text.y = element_markdown(size=10))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))
 
-ggsave(here::here("output","si","gam_solo_predictions.png"),units="in",width=8,height=8,dpi=330)
+
+fname <- "gam_solo_predictions.png"
+floc <- here::here("output","si",fname)
+ggsave(floc, p, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "gam_solo_predictions.tiff"
+floc <- here::here("output","si",fname)
+ggsave(floc, p, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "gam_solo_predictions.pdf"
+floc <- here::here("output","si",fname)
+ggsave(floc, p, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 # read in the mlr predictions and create composite
 # TODO do we actually need to do the join and create composite?
@@ -388,7 +425,7 @@ p_comp_sim_pred<-ggplot(data=composite, aes(x=mu_50*100, y=ks_pct*100)) +
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         strip.text.x = element_markdown(size=5),
-        strip.text.y = element_markdown(size=5),
+        strip.text.y = element_markdown(size=4),
         strip.background = element_blank(),
         plot.title = element_text(size=7,hjust = 0.5))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))+
@@ -439,6 +476,42 @@ p_err<-ggplot(data=mlr_res, aes(x=mu_50*100, y=ks_pct*100)) +
         legend.key.size=unit(4, 'mm'))+
   ggtitle("MLR Error")+
   facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))
+#p_err
+
+# update theme for large format image
+p_err_solo <- p_err+
+  theme(legend.position = "right",
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        axis.title.y = element_text(size = 8,color="black"),
+        axis.title.x = element_text(size = 8,color="black"),
+        axis.text = element_text(size=7,color="black"),
+        axis.text.x = element_text(angle=-45),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        strip.text.x = element_markdown(size=7),
+        strip.text.y = element_markdown(size=7),
+        strip.background= element_blank(),
+        plot.title = element_blank(),
+        legend.key.size=unit(8, 'mm'))
+
+fname <- "mlr_solo_error.png"
+floc <- here::here("output","si",fname)
+ggsave(floc, p_err_solo, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "mlr_solo_error.pdf"
+floc <- here::here("output","si",fname)
+ggsave(floc, p_err_solo, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "mlr_solo_error.tiff"
+floc <- here::here("output","si",fname)
+ggsave(floc, p_err_solo, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+               md5sum(floc)))
 
 # viridis colors for reference. Did some manual stuff to make sure that
 # bin colors matched between plots. Breaks was causing weird issues and CBA
@@ -458,7 +531,7 @@ p_gam_err<-ggplot(data=composite, aes(x=mu_50*100, y=ks_pct*100)) +
                      breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
   scale_x_continuous(labels = function(x) paste0(x, "%"),
                      breaks = c(-50,-30,-10,10,30,50)) +
-  guides(fill=guide_legend(title="Probability of becoming\na thriving colony\n")) +
+  guides(fill=guide_legend(title="Error (Model-Simulation)")) +
   theme(legend.position = "none",
         legend.title = element_text(size = 5),
         legend.text = element_text(size = 5),
@@ -475,6 +548,56 @@ p_gam_err<-ggplot(data=composite, aes(x=mu_50*100, y=ks_pct*100)) +
         plot.title = element_text(size=7,hjust = 0.5))+
   ggtitle("GAM Error")+
   facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))
+
+
+# update theme for large format image
+p_gam_err_solo <- p_gam_err+  theme(legend.position = "right",
+                            legend.title = element_text(size = 8),
+                            legend.text = element_text(size = 8),
+                            axis.title.y = element_text(size = 8,color="black"),
+                            axis.title.x = element_text(size = 8,color="black"),
+                            axis.text = element_text(size=7,color="black"),
+                            axis.text.x = element_text(angle=-45),
+                            panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                            panel.background = element_blank(), axis.line = element_line(colour = "black"),
+                            strip.text.x = element_markdown(size=7),
+                            strip.text.y = element_markdown(size=7),
+                            strip.background= element_blank(),
+                            plot.title = element_blank(),
+                            legend.key.size=unit(8, 'mm'))
+
+fname <- "gam_solo_error.png"
+floc <- here::here("output","si",fname)
+ggsave(floc, p_gam_err_solo, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "gam_solo_error.pdf"
+floc <- here::here("output","si",fname)
+ggsave(floc, p_gam_err_solo, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "gam_solo_error.tiff"
+floc <- here::here("output","si",fname)
+ggsave(floc, p_gam_err_solo, width=8,height=8,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+# Evaluate main effects only ----------------------------------------------
+
+gam.no_i.all_smooth <- readRDS(here::here("output","fits","gam.no_i.all_smooth"))
+pg.main<-predict_gam(gam.no_i.all_smooth ,values=list(mu_pct = unique(probs$mu_pct),
+                                                       ks_pct =  unique(probs$ks_pct),
+                                                       nbugs=unique(probs$nbugs),
+                                                       spacing=unique(probs$spacing)))
+
+combined.main <-left_join(x=probs,y=pg.main) %>%
+  mutate(pred_error = prob_thrive-fit)
+
+combined.main %>% mutate(sq_error = pred_error*pred_error)%>% ungroup() %>%
+  summarise(RMSE = sqrt(mean(sq_error)))
+summary(gam.no_i.all_smooth)
 
 # Calculate per-crowding RMSEs ---------------
 
@@ -499,6 +622,41 @@ rmse<-rbind(mlr_rmse,gam_rmse)%>%ungroup() %>%
   mutate_if(is.numeric,
             signif,
             digits = 3)
+
+p_gam_mains_err<-ggplot(data=combined.main, aes(x=mu_50*100, y=ks_pct*100)) +
+  geom_raster(data=combined.main,aes(x=mu_pct*100, y=ks_pct*100,fill=cut(fit,c(-0.11,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.1)))) +
+  scale_fill_manual(values = c("#d73027", "#f46d43", "#fdae61", "#fee090", '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#225ea8'),
+                    labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
+  facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
+  coord_fixed()+
+  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
+  coord_fixed(xlim=c(-50,50))+
+  coord_fixed(ylim=c(-50,50))+
+  scale_y_continuous(labels = function(x) paste0(x, "%"),
+                     breaks = c(-50,-40,-30,-20,-10,0,10,20,30,40,50)) +
+  scale_x_continuous(labels = function(x) paste0(x, "%"),
+                     breaks = c(-50,-30,-10,10,30,50)) +
+  guides(fill=guide_legend(title="Probability of becoming\na thriving colony\n")) +
+  theme(legend.position = "right",
+        legend.title = element_text(size = 5),
+        legend.text = element_text(size = 5),
+        axis.title.x = element_text(size = 5,color="black"),
+        axis.title.y = element_blank(),
+        axis.text = element_text(size=3.5,color="black"),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(angle=-45),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        strip.text.x = element_markdown(size=5),
+        strip.text.y = element_blank(),
+        strip.background = element_blank(),
+        plot.title = element_text(size=7,hjust = 0.5),
+        legend.key.size=unit(4, 'mm'))+
+  ggtitle("General Additive Model (GAM)")+
+  facet_grid(rows = vars(nbugs), cols=vars(spacing),labeller=labeller(.rows = nbugs_label, .cols = spacing_label ))
+#p_gam_mains_err
+
 # Create table and plot-table for final panel ---------------
 d <- tibble(x = c(0.95, 0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95), y = c(0.95, 0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95),
             nbugs = c(4,9,16,4,16,9,4,9,16),
@@ -536,16 +694,31 @@ ptab<-ggplot(composite, aes(x=mu_pct*100, y=ks_pct*100)) +
         plot.title = element_text(size=7,hjust = 0.5))+
         ggtitle("RMSE comparison")
 
-# perrs<-p_err+p_gam_err+ptab+
-#   plot_layout(guides="collect")+
-#   plot_annotation(tag_levels = 'A') &
-#   theme(plot.tag = element_text(size = 8)) # nb could use this more to reduce code in above
-# #perrs
+perrs<-p_err+p_gam_err+ptab+
+  plot_layout(guides="collect")+
+  plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 8)) # nb could use this more to reduce code in above
+#perrs
 # ggsave(plot=perrs,here::here("output","model_errs.png"),units="in",width=8,height=4,dpi=330)
 
 # Create final composition of all panels summarizing models and errors ---------------
 p_mod_summ<-plot3/perrs+ plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 7)) # nb could use this more to reduce code in above
-ggsave(plot=p_mod_summ,here::here("output","model_summary.png"),units="in",width=8,height=5,dpi=330)
-ggsave(plot=p_mod_summ,here::here("output","model_summary.tiff"),units="in",width=8,height=6.5,dpi=330)
-ggsave(plot=p_mod_summ,here::here("output","model_summary.pdf"),units="in",width=8,height=6.5,dpi=330)
+  theme(plot.tag = element_text(size = 7),) # nb could use this more to reduce code in above
+
+fname <- "model_summary.png"
+floc <- here::here("output",fname)
+ggsave(floc, p_mod_summ, width=8,height=5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "model_summary.pdf"
+floc <- here::here("output",fname)
+ggsave(floc, p_mod_summ, width=8,height=5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))
+
+fname <- "model_summary.tiff"
+floc <- here::here("output",fname)
+ggsave(floc, p_mod_summ, width=8,height=5,units="in",dpi=330)
+log_info(paste('Wrote', file.path("output",fname), ' MD5Sum: ',
+               md5sum(floc)))

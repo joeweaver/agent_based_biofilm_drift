@@ -1,0 +1,51 @@
+RANDS = []
+with open('resources/seedlist.txt', 'r') as f:
+    for rand_seed in f:
+        RANDS.append(rand_seed.strip())
+
+EXISTING, files = glob_wildcards("results/runs/rand{existing}/{files}")
+EXISTING = set(EXISTING)
+
+with open('resources/grids.json','r') as f:
+    grids = json.load(f)
+
+grid_N = grids['grid_N']
+grid_spacing = grids['grid_spacing']
+bug_diameter = 1e-6
+
+
+nufebex = "/mnt/nfs/home/njw311/dev-compute-vol/src/lmp_mpi"
+nufebcores = 1
+
+#print(f'RANDS: {RANDS}')       
+#print(f'GRID Ns: {grid_N}')
+#print(f'GRID SPACING: {grid_spacing}')
+
+rule all:
+    input:
+       expand("results/{N}x{N}_{space}_default_mu_ks_yield_conc/rand{randno}/done.tkn", N = grid_N, space = grid_spacing, randno = RANDS)
+
+rule run_sims:
+    input:
+        "results/{N}x{N}_{space}_default_mu_ks_yield_conc/rand{randno}/Inputscript.lmp"
+    output:
+        "results/{N}x{N}_{space}_default_mu_ks_yield_conc/rand{randno}/done.tkn"
+    run:
+        shell("results/{wildcards.N}x{wildcards.N}_{wildcards.space}_default_mu_ks_yield_conc/rand{wildcards.randno}/Allclean.sh")
+        shell("results/{wildcards.N}x{wildcards.N}_{wildcards.space}_default_mu_ks_yield_conc/rand{wildcards.randno}/Allrun.sh {nufebex} {nufebcores}")
+
+rule gen_sims:
+    input:
+       "resources/seedlist.txt",
+       "resources/grids.json",
+       "resources/template/Inputscript.lmp",
+       "resources/template/Allrun.sh",
+       "resources/template/Allclean.sh"
+    output:
+       "results/{N}x{N}_{space}_default_mu_ks_yield_conc/rand{randno}/Inputscript.lmp",
+       "results/{N}x{N}_{space}_default_mu_ks_yield_conc/rand{randno}/atom.in"
+    priority: 50
+    run:
+       shell("python scripts/generate.py {wildcards.randno} {wildcards.N}x{wildcards.N}_{wildcards.space}_default_mu_ks_yield_conc/ {wildcards.N} {wildcards.N} {wildcards.space} 1e-6 2e-4")
+       shell("python scripts/create_grid.py {wildcards.randno} {wildcards.N}x{wildcards.N}_{wildcards.space}_default_mu_ks_yield_conc/ {wildcards.N} {wildcards.space}")
+

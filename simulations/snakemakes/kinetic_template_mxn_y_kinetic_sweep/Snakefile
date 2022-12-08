@@ -1,0 +1,123 @@
+import os
+
+with open('resources/grids.json','r') as f:
+    grids = json.load(f)
+
+grid_N = grids['grid_N'][0]
+grid_spacing = grids['grid_spacing'][0]
+
+#print(f'N: {grid_N} space: {grid_spacing}')
+
+globstring = f'../{grid_N}x{grid_N}_{grid_spacing}_seeds/results/{{N}}x{{M}}_{{space}}_default_mu_ks_yield_conc/rand{{randno}}/done.tkn'
+
+N, M, SPACE, RANDNO = glob_wildcards(globstring)
+N = set(N)
+M = set(M)
+SPACE = set(SPACE)
+RANDNO = set(RANDNO)
+#print(f'RANDNO {RANDNO}')
+# print(len(expand("resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/done.tkn",gridN=N,gridM=M,space=SPACE,seed=RANDNO)))
+# for run in  expand("resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/done.tkn",gridN=N,gridM=M,space=SPACE,seed=RANDNO):
+# print(run)
+
+nufebex = "/mnt/nfs/home/njw311/dev-compute-vol/src/lmp_mpi"
+nufebcores = 1
+
+ks_base = 3.5e-5
+mu_base = 0.00028 
+#sweep_coeffs = [1.1]
+sweep_coeffs = [0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5]
+
+ks_sweep = [ks_base * c for c in sweep_coeffs]
+mu_sweep = [mu_base * c for c in sweep_coeffs]
+yield_sweep = 0.61
+
+localrules: generate_runs, template_input, copy_baseline
+
+rule all:
+        input:
+            expand(
+                    "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/sweep_colony_outcomes.csv",
+                gridN=N,
+                gridM=M,
+                space=SPACE,
+                seed=RANDNO,
+                ks = ks_sweep, mu = mu_sweep, bioyield = yield_sweep 
+            )
+
+rule aggregate_sweeps:
+	input:
+            files = expand(
+                    "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/ks_{ks:.2e}-mu_{mu:.2e}-yield_{bioyield:.2e}/rand{seed}/colony_outcomes.csv",
+                gridN=N,
+                gridM=M,
+                space=SPACE,
+                seed=RANDNO,
+                ks = ks_sweep, mu = mu_sweep, bioyield = yield_sweep 
+            )
+	output:
+               # "results/{N}x{M}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/param_combo_colony_outcomes.csv"
+               "results/{N}x{M}_{space}_default_mu_ks_yield_conc/sweep_colony_outcomes.csv"
+	shell:
+		"python scripts/aggregate_single_param.py results/{wildcards.N}x{wildcards.M}_{wildcards.space}_default_mu_ks_yield_conc/ {input.files}"
+
+
+rule classify_colonies:
+	input:
+                "results/{N}x{M}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/done.tkn"
+	output:
+                "results/{N}x{M}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/colony_outcomes.csv"
+	shell:
+                #"touch results/{wildcards.N}x{wildcards.M}_{wildcards.space}_default_mu_ks_yield_conc/ks_{wildcards.ks}-{wildcards.mu}-yield_7.00e-01/rand{wildcards.seed}/colony_outcomes.csv"
+		"python scripts/postproc.py results/{wildcards.N}x{wildcards.M}_{wildcards.space}_default_mu_ks_yield_conc/ks_{wildcards.ks}-mu_{wildcards.mu}-yield_{wildcards.bioyield}/rand{wildcards.seed}/ {wildcards.N} 100"
+
+
+rule run_sweeps:
+    input:
+        "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/Inputscript.lmp"
+    output:
+        "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/done.tkn"
+    run:
+        shell("results/{wildcards.gridN}x{wildcards.gridN}_{wildcards.space}_default_mu_ks_yield_conc/ks_{wildcards.ks}-mu_{wildcards.mu}-yield_{wildcards.bioyield}/rand{wildcards.seed}/Allclean.sh")
+        shell("results/{wildcards.gridN}x{wildcards.gridN}_{wildcards.space}_default_mu_ks_yield_conc/ks_{wildcards.ks}-mu_{wildcards.mu}-yield_{wildcards.bioyield}/rand{wildcards.seed}/Allrun.sh {nufebex} {nufebcores}")
+
+rule generate_runs:
+    input:
+        "resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/Inputscript.templated",
+    output:
+        "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/Inputscript.lmp"
+    shell:
+       "python scripts/generate_kinetic_sweep_instance.py resources/baseline-seeds/{wildcards.gridN}x{wildcards.gridN}_{wildcards.space}_default_mu_ks_yield_conc/rand{wildcards.seed} {wildcards.ks} {wildcards.mu} {wildcards.bioyield}" 
+
+rule template_input:
+    input:
+        "resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/biggest_loser.txt",
+    output:
+        "resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/Inputscript.templated",
+    shell:
+        "python scripts/create_input_template.py resources/baseline-seeds/{wildcards.gridN}x{wildcards.gridN}_{wildcards.space}_default_mu_ks_yield_conc/rand{wildcards.seed}"
+
+
+rule determine_loser:
+    input:
+        "resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/Inputscript.orig",
+    output:
+        "resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/biggest_loser.txt",
+    run:
+        lineages = int(wildcards.gridN) ** 2
+        shell(
+            "python scripts/biggest_loser.py resources/baseline-seeds/{wildcards.gridN}x{wildcards.gridN}_{wildcards.space}_default_mu_ks_yield_conc/rand{wildcards.seed} cell_rel_volumes.csv {lineages}"
+        )
+
+
+rule copy_baseline:
+    input:
+        #could probably use gridN and space wildcards instead of grid_N and grid_space
+        f'../{grid_N}x{grid_N}_{grid_spacing}_seeds/results/{{gridN}}x{{gridN}}_{{space}}_default_mu_ks_yield_conc/rand{{seed}}/done.tkn',
+    output:
+        "resources/baseline-seeds/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/rand{seed}/Inputscript.orig",
+    run:
+        shell("scripts/copy_baseline.sh {input} {output}")
+
+
+

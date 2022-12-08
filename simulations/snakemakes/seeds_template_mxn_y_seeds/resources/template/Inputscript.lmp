@@ -1,0 +1,364 @@
+# NUFEB simulation with HETs and AOBs
+
+units si                                   # using si units
+atom_style      coccus                      # using nufeb atom style
+atom_modify     map array sort 1000 1e-6   # map array: find atoms using indices
+		                           # sort 1000 5.0e-6: sort every 1000
+					   #   steps with 5.0e-6 binsize
+boundary        pp pp ff                   # periodic boundaries in x and y
+                                           #   fixed boundary in z
+newton          off                        # forces between local and ghost
+                                           #   atoms are computed in each
+					   #   processor without communication
+#processors      4 4 1                      # processor grid
+
+comm_modify     vel yes                    # communicate velocities for ghost
+                                           # atoms
+comm_modify     cutoff 2e-6                # guarantee that enough atoms are
+                                           # communicated to correctly compute
+
+read_data      atom.in					  
+
+group           het_1   type 1     
+group           het_2   type 2    
+group           het_3   type 3   
+group           het_4   type 4           
+group           het_5   type 5           
+group           het_6   type 6           
+group           het_7   type 7           
+group           het_8   type 8           
+group           het_9   type 9           
+group           het_10   type 10           
+group           het_11   type 11           
+group           het_12   type 12           
+group           het_13   type 13           
+group           het_14   type 14           
+group           het_15   type 15           
+group           het_16   type 16           
+group           het_17   type 17           
+group           het_18   type 18           
+group           het_19   type 19           
+group           het_20   type 20           
+group           het_21   type 21           
+group           het_22   type 22           
+group           het_23   type 23           
+group           het_24   type 24           
+group           het_25   type 25           
+group           eps     type 26
+group           dead  empty
+
+neighbor        7e-7 bin                # setting neighbour skin distance and
+                                        #   style
+neigh_modify    check yes               # rebuild neighbour list if any atom
+                                        #   had moved more than half the skin
+					#   distance
+
+# select grid style
+grid_style      nufeb/monod 4 sub o2 no2 no3 5e-6
+
+# test grid comm
+#run_style       test/comm_grid
+#run             0
+
+# set substrates initial concentration
+grid_modify     set sub    1e-4   
+grid_modify     set o2     1e-4   
+grid_modify     set no2    1e-4    
+grid_modify     set no3    1e-4    
+
+# define pair style
+pair_style  gran/hooke/history 1e-4 NULL 1e-5 NULL 0.0 1
+pair_coeff  * *
+
+# NVE integration with maximum distance limit
+fix nve all nve/limit 1e-8
+
+# monod reaction fixes
+#   should consider using read_data's fix keyword
+fix monod_het_1 het_1 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_2 het_2 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_3 het_3 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_4 het_4 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_5 het_5 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_6 het_6 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_7 het_7 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_8 het_8 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_9 het_9 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_10 het_10 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_11 het_11 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_12 het_12 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_13 het_13 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_14 het_14 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_15 het_15 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_16 het_16 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_17 het_17 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_18 het_18 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_19 het_19 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_20 het_20 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_21 het_21 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_22 het_22 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_23 het_23 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_24 het_24 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+fix monod_het_25 het_25 nufeb/monod/het sub 3.5e-5 o2 0 no2 0 no3 0 growth 0.00028 yield 0.61 decay 0.0 epsyield 0.18 anoxic 0.0 epsdens 30
+
+fix monod_eps eps nufeb/monod/eps sub decay 0
+
+# diffusion reaction fixes
+fix diff_sub all nufeb/diffusion_reaction sub 1.6e-9 pp pp nd 1e-4
+
+# biological model fixes
+fix div all nufeb/divide/coccus 1.36e-6 30 het_seed
+fix eps_ext_1 het_1 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_2 het_2 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_3 het_3 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_4 het_4 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_5 het_5 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_6 het_6 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_7 het_7 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_8 het_8 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_9 het_9 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_10 het_10 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_11 het_11 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_12 het_12 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_13 het_13 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_14 het_14 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_15 het_15 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_16 het_16 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_17 het_17 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_18 het_18 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_19 het_19 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_20 het_20 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_21 het_21 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_22 het_22 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_23 het_23 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_24 het_24 nufeb/eps_extract 26 eps 1.3 30 5678
+fix eps_ext_25 het_25 nufeb/eps_extract 26 eps 1.3 30 5678
+
+
+fix death_1 het_1 nufeb/death dead 5e-7
+fix death_2 het_2 nufeb/death dead 5e-7
+fix death_3 het_3 nufeb/death dead 5e-7
+fix death_4 het_4 nufeb/death dead 5e-7
+fix death_5 het_5 nufeb/death dead 5e-7
+fix death_6 het_6 nufeb/death dead 5e-7
+fix death_7 het_7 nufeb/death dead 5e-7
+fix death_8 het_8 nufeb/death dead 5e-7
+fix death_9 het_9 nufeb/death dead 5e-7
+fix death_10 het_10 nufeb/death dead 5e-7
+fix death_11 het_11 nufeb/death dead 5e-7
+fix death_12 het_12 nufeb/death dead 5e-7
+fix death_13 het_13 nufeb/death dead 5e-7
+fix death_14 het_14 nufeb/death dead 5e-7
+fix death_15 het_15 nufeb/death dead 5e-7
+fix death_16 het_16 nufeb/death dead 5e-7
+fix death_17 het_17 nufeb/death dead 5e-7
+fix death_18 het_18 nufeb/death dead 5e-7
+fix death_19 het_19 nufeb/death dead 5e-7
+fix death_20 het_20 nufeb/death dead 5e-7
+fix death_21 het_21 nufeb/death dead 5e-7
+fix death_22 het_22 nufeb/death dead 5e-7
+fix death_23 het_23 nufeb/death dead 5e-7
+fix death_24 het_24 nufeb/death dead 5e-7
+fix death_25 het_25 nufeb/death dead 5e-7
+
+
+# mechanical model fixes
+fix wall all wall/gran hooke/history 1e-3 NULL 1e-4 NULL 0 0 zplane 0.0 8e-5
+#fix_modify wall virial yes
+fix eps_adh all nufeb/adhesion/eps eps 1e6
+#fix_modify eps_adh virial yes
+
+#fix f_adh all nufeb/adhesion 0 1e-6
+#fix_modify f_adh ah * * 1e-17
+
+fix vis all viscous 1e-5
+
+# pressure computation
+compute ke all ke
+variable one equal 1.0
+compute press all pressure NULL pair vol v_one
+variable press equal "(c_ke + c_press) / (3.0 * c_vol)" 
+variable mass equal "mass(all)"
+
+# Relative volume of the two heterotrophs
+# Compute scalar volumes representing total volume and per-heterotroph volume
+compute vol all nufeb/volume
+compute h1v het_1 nufeb/volume
+compute h2v het_2 nufeb/volume
+compute h3v het_3 nufeb/volume
+compute h4v het_4 nufeb/volume
+compute h5v het_5 nufeb/volume
+compute h6v het_6 nufeb/volume
+compute h7v het_7 nufeb/volume
+compute h8v het_8 nufeb/volume
+compute h9v het_9 nufeb/volume
+compute h10v het_10 nufeb/volume
+compute h11v het_11 nufeb/volume
+compute h12v het_12 nufeb/volume
+compute h13v het_13 nufeb/volume
+compute h14v het_14 nufeb/volume
+compute h15v het_15 nufeb/volume
+compute h16v het_16 nufeb/volume
+compute h17v het_17 nufeb/volume
+compute h18v het_18 nufeb/volume
+compute h19v het_19 nufeb/volume
+compute h20v het_20 nufeb/volume
+compute h21v het_21 nufeb/volume
+compute h22v het_22 nufeb/volume
+compute h23v het_23 nufeb/volume
+compute h24v het_24 nufeb/volume
+compute h25v het_25 nufeb/volume
+
+# Use the computes to populate variables for output
+variable vol equal "c_vol"
+variable h1v equal "c_h1v"
+variable h2v equal "c_h2v"
+variable h3v equal "c_h3v"
+variable h4v equal "c_h4v"
+variable h5v equal "c_h5v"
+variable h6v equal "c_h6v"
+variable h7v equal "c_h7v"
+variable h8v equal "c_h8v"
+variable h9v equal "c_h9v"
+variable h10v equal "c_h10v"
+variable h11v equal "c_h11v"
+variable h12v equal "c_h12v"
+variable h13v equal "c_h13v"
+variable h14v equal "c_h14v"
+variable h15v equal "c_h15v"
+variable h16v equal "c_h16v"
+variable h17v equal "c_h17v"
+variable h18v equal "c_h18v"
+variable h19v equal "c_h19v"
+variable h20v equal "c_h20v"
+variable h21v equal "c_h21v"
+variable h22v equal "c_h22v"
+variable h23v equal "c_h23v"
+variable h24v equal "c_h24v"
+variable h25v equal "c_h25v"
+
+# Relative volume of hetertroph 1 vs total heterotrophs
+variable thv equal "(c_h1v + c_h2v + c_h3v + c_h4v + c_h5v + c_h6v + c_h7v + c_h8v + c_h9v + c_h10v + c_h11v + c_h12v + c_h13v + c_h14v + c_h15v + c_h16v + c_h17v + c_h18v + c_h19v + c_h20v + c_h21v + c_h22v + c_h23v +c_h24v + c_h25v)"
+variable h1rv equal "c_h1v / v_thv" 
+variable h2rv equal "c_h2v / v_thv" 
+variable h3rv equal "c_h3v / v_thv" 
+variable h4rv equal "c_h4v / v_thv" 
+variable h5rv equal "c_h5v / v_thv" 
+variable h6rv equal "c_h6v / v_thv" 
+variable h7rv equal "c_h7v / v_thv" 
+variable h8rv equal "c_h8v / v_thv" 
+variable h9rv equal "c_h9v / v_thv" 
+variable h10rv equal "c_h10v / v_thv" 
+variable h11rv equal "c_h11v / v_thv" 
+variable h12rv equal "c_h12v / v_thv" 
+variable h13rv equal "c_h13v / v_thv" 
+variable h14rv equal "c_h14v / v_thv" 
+variable h15rv equal "c_h15v / v_thv" 
+variable h16rv equal "c_h16v / v_thv" 
+variable h17rv equal "c_h17v / v_thv" 
+variable h18rv equal "c_h18v / v_thv" 
+variable h19rv equal "c_h19v / v_thv" 
+variable h20rv equal "c_h20v / v_thv" 
+variable h21rv equal "c_h21v / v_thv" 
+variable h22rv equal "c_h22v / v_thv" 
+variable h23rv equal "c_h23v / v_thv" 
+variable h24rv equal "c_h24v / v_thv" 
+variable h25rv equal "c_h25v / v_thv" 
+
+compute zh1 het_1 property/atom z
+compute zh2 het_2 property/atom z
+compute zh3 het_3 property/atom z
+compute zh4 het_4 property/atom z
+compute zh5 het_5 property/atom z
+compute zh6 het_6 property/atom z
+compute zh7 het_7 property/atom z
+compute zh8 het_8 property/atom z
+compute zh9 het_9 property/atom z
+compute zh10 het_10 property/atom z
+compute zh11 het_11 property/atom z
+compute zh12 het_12 property/atom z
+compute zh13 het_13 property/atom z
+compute zh14 het_14 property/atom z
+compute zh15 het_15 property/atom z
+compute zh16 het_16 property/atom z
+compute zh17 het_17 property/atom z
+compute zh18 het_18 property/atom z
+compute zh19 het_19 property/atom z
+compute zh20 het_20 property/atom z
+compute zh21 het_21 property/atom z
+compute zh22 het_22 property/atom z
+compute zh23 het_23 property/atom z
+compute zh24 het_24 property/atom z
+compute zh25 het_25 property/atom z
+
+compute mh1 all reduce max c_zh1 
+compute mh2 all reduce max c_zh2 
+compute mh3 all reduce max c_zh3 
+compute mh4 all reduce max c_zh4 
+compute mh5 all reduce max c_zh5 
+compute mh6 all reduce max c_zh6 
+compute mh7 all reduce max c_zh7 
+compute mh8 all reduce max c_zh8 
+compute mh9 all reduce max c_zh9 
+compute mh10 all reduce max c_zh10 
+compute mh11 all reduce max c_zh11 
+compute mh12 all reduce max c_zh12 
+compute mh13 all reduce max c_zh13 
+compute mh14 all reduce max c_zh14 
+compute mh15 all reduce max c_zh15 
+compute mh16 all reduce max c_zh16 
+compute mh17 all reduce max c_zh17
+compute mh18 all reduce max c_zh18 
+compute mh19 all reduce max c_zh19 
+compute mh20 all reduce max c_zh20 
+compute mh21 all reduce max c_zh21 
+compute mh22 all reduce max c_zh22 
+compute mh23 all reduce max c_zh23 
+compute mh24 all reduce max c_zh24 
+compute mh25 all reduce max c_zh25 
+
+variable mhh equal "(c_mh1 + c_mh2 + c_mh3 + c_mh4 + c_mh5 + c_mh6 + c_mh7 + c_mh8 + c_mh9 + c_mh10 + c_mh11 +c_mh12 + c_mh13 +c_mh14 +c_mh15 +c_mh16 + c_mh17 + c_mh18 +c_mh19 + c_mh20 + c_mh21 +c_mh22 +c_mh23 + c_mh24 + c_mh25)"
+
+variable fullvol equal "template_fullvol"
+variable fillpct equal "c_vol/v_fullvol"
+
+# Timestep
+variable step equal "step"
+variable atoms equal "atoms"
+
+# file output
+#dump du1 all vtk 100 dump*.vtu id type diameter 
+#dump du2 all grid/vtk 10 dump_%_*.vti con rea den gro 
+#dump du3 all nufeb/hdf5 10 dump.h5 id type x y z vx vy vz fx fy fz radius conc reac 
+
+# Record the cell volume data to a csv file
+fix volcsv all print 100 "${step},${vol},${fillpct},${mhh},${h1rv},${h2rv},${h3rv},${h4rv},${h5rv},${h6rv},${h7rv},${h8rv},${h9rv},${h10rv},${h11rv},${h12rv},${h13rv},${h14rv},${h15rv},${h16rv},${h17rv},${h18rv},${h19rv},${h20rv},${h21rv},${h22rv},${h23rv},${h24rv},${h25rv},${h1v},${h2v},${h3v},${h4v},${h5v},${h6v},${h7v},${h8v},${h9v},${h10v},${h11v},${h12v},${h13v},${h14v},${h15v},${h16v},${h17v},${h18v},${h19v},${h20v},${h21v},${h22v},${h23v},${h24v},${h25v}" & 
+    screen no &
+    file "cell_rel_volumes.csv" & 
+    title "step,total volume,fill_percent,max_het_height,het1_rv,het2_rv,het3_rv,het4_rv,het5_rv,het6_rv,het7_rv,het8_rv,het9_rv,het10_rv,het11_rv,het12_rv,het13_rv,het14_rv,het15_rv,het16_rv,het17_rv,het18_rv,het19_rv,het20_rv,het21_rv,het22_rv,het23_rv,het24_rv,het25_rv,het1_v,het2_v,het3_v,het4_v,het5_v,,het6_v,het7_v,het8_v,het9_v,het10_v,het11_v,het12_v,het13_v,het14_v,het15_v,het16_v,het17_v,het18_v,het19_v,het20_v,het21_v,het22_v,het23_v,het24_v,het25_v"
+
+#fix volcsv all print 1 "${step},${vol},${fillpct},${mhh},${h1rv},${h2rv},${h3rv},${h4rv},${h5rv},${h6rv},${h7rv},${h8rv},${h9rv},${h10rv},${h11rv},${h12rv},${h13rv},#${h14rv},${h15rv},${h16rv},${h17rv},${h18rv},${h19rv},${h20rv},${h21rv},${h22rv},${h23rv},${h24rv},${h25rv}" & 
+#    screen no &
+#    file "cell_rel_volumes.csv" & 
+#    title "step,total volume,fill_percent,max_het_height,het1_rv,het2_rv,het_3rv,het4_rv,het5_rv,het6_rv,het7_rv,het_8rv,het9_rv,het10_rv,het11_rv,het12_rv,het_13rv,#het14_rv,het15_rv,het16_rv,het17_rv,het_18rv,het19_rv,het20_rv,het21_rv,het22_rv,het_23rv,het24_rv,het25_rv"
+
+
+#fix volcsv all print 1 "${step},${vol},${fillpct},${mhh},${h1v},${h2v},${h3v},${h4v},${h5v},${h6v},${h7v},${h8v},${h9v},${h10v},${h11v},${h12v},${h13v},${h14v},${h15v},${h16v},${h17v},${h18v},${h19v},${h20v},${h21v},${h22v},${h23v},${h24v},${h25v}" & 
+#    screen no &
+#    file "cell_abs_volumes.csv" & 
+#    title "step,total volume,fill_percent,max_het_height,het1_v,het2_v,het_3v,het4_v,het5_v,het6_v,het7_v,het_8v,het9_v,het10_v,het11_v,het12_v,het_13v,het14_v,het15_v,#het16_v,het17_v,het_18v,het19_v,het20_v,het21_v,het22_v,het_23v,het24_v,het25_v"
+
+
+# thermo output
+thermo_style custom step atoms v_fillpct c_vol v_mass v_h1rv v_h2rv v_h3rv v_h4rv v_h5rv v_h5v
+thermo 10
+thermo_modify lost warn
+
+fix maxvol all halt 1 v_fillpct > 0.20 error soft
+
+#fix maxbugs all halt 1 v_atoms > 80000
+# issue run command
+run_style nufeb diffdt 1e-4 difftol 1e-6 pairdt 1e-2 pairtol 1 pairmax 1000 diffmax 1000
+timestep 1000
+run 1000000000
+shell touch done.tkn

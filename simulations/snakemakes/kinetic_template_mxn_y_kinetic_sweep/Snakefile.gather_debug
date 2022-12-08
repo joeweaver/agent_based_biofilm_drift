@@ -1,0 +1,82 @@
+import os
+
+N, M, SPACE, RANDNO = glob_wildcards(
+    "../highres_3x3_10_seeds/results/{N}x{M}_{space}_default_mu_ks_yield_conc/rand{randno}/done.tkn"
+)
+N = set(N)
+M = set(M)
+SPACE = set(SPACE)
+RANDNO = set(RANDNO)
+
+#N = [3]
+#M = [3]
+#SPACE = [10]
+#RANDNO = [1701,1031]
+nufebex = "/mnt/nfs/home/njw311/dev-compute-vol/src/lmp_mpi"
+nufebcores = 1
+
+ks_base = 3.5e-5
+mu_base = 0.00028 
+#sweep_coeffs = [0.5,0.6,0.7,0.8,0.9,1.1,1.2,1.3,1.4,1.5]
+sweep_coeffs = [0.5,0.6,0.7,0.8,0.9,1.1,1.2,1.3,1.4,1.5]
+
+ks_sweep = [ks_base * c for c in sweep_coeffs]
+mu_sweep = [mu_base * c for c in sweep_coeffs]
+yield_sweep = 0.70
+#ks_sweep=[1.75e-05,0.6*ks_base]
+#mu_sweep=[1.4e-04]
+
+rule all:
+        input:
+            expand(
+                    "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/sweep_colony_outcomes.csv",
+                gridN=N,
+                gridM=M,
+                space=SPACE,
+                seed=RANDNO,
+                ks = ks_sweep, mu = mu_sweep, bioyield = yield_sweep 
+            )
+
+# rule aggregate_sweep:
+#         input:
+#             files = expand(
+#                     "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/ks_{ks:.2e}-mu_{mu:.2e}-yield_{bioyield:.2e}/param_combo_colony_outcomes.csv",
+#                 gridN=N,
+#                 gridM=M,
+#                 space=SPACE,
+#                 seed=RANDNO,
+#                 ks = ks_sweep, mu = mu_sweep, bioyield = yield_sweep 
+#             )
+# 	output:
+#                 "results/{N}x{M}_{space}_default_mu_ks_yield_conc/sweep_colony_outcomes.csv"
+# 	shell:
+#                 "echo {input.files}"
+
+rule aggregate_sweeps:
+	input:
+            files = expand(
+                    "results/{gridN}x{gridN}_{space}_default_mu_ks_yield_conc/ks_{ks:.2e}-mu_{mu:.2e}-yield_{bioyield:.2e}/rand{seed}/colony_outcomes.csv",
+                gridN=N,
+                gridM=M,
+                space=SPACE,
+                seed=RANDNO,
+                ks = ks_sweep, mu = mu_sweep, bioyield = yield_sweep 
+            )
+	output:
+               # "results/{N}x{M}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/param_combo_colony_outcomes.csv"
+               "results/{N}x{M}_{space}_default_mu_ks_yield_conc/sweep_colony_outcomes.csv"
+	shell:
+		"python scripts/aggregate_single_param.py results/{wildcards.N}x{wildcards.M}_{wildcards.space}_default_mu_ks_yield_conc/ {input.files}"
+                #"echo {input.files}"
+
+
+rule classify_colonies:
+	input:
+                "results/{N}x{M}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/done.tkn"
+	output:
+                "results/{N}x{M}_{space}_default_mu_ks_yield_conc/ks_{ks}-mu_{mu}-yield_{bioyield}/rand{seed}/colony_outcomes.csv"
+	shell:
+                #"touch results/{wildcards.N}x{wildcards.M}_{wildcards.space}_default_mu_ks_yield_conc/ks_{wildcards.ks}-{wildcards.mu}-yield_7.00e-01/rand{wildcards.seed}/colony_outcomes.csv"
+		"python scripts/postproc.py results/{wildcards.N}x{wildcards.M}_{wildcards.space}_default_mu_ks_yield_conc/ks_{wildcards.ks}-mu_{wildcards.mu}-yield_{wildcards.bioyield}/rand{wildcards.seed}/"
+
+

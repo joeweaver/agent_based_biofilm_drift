@@ -1,0 +1,3 @@
+*.swp
+.snakemake
+results/[0-9]*x[0-9]*

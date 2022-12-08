@@ -12,6 +12,7 @@ library(RColorBrewer) # palette management in plots
 library(ggpmisc) # add regression fits to plot
 library(ggpubr) # help with plots
 library(ggtext) # help with plots
+library(tools) # md5sum
 
 # precondition
 # ./data/sweep_colony_outcomes should contain csvs describing simulation results
@@ -70,8 +71,18 @@ fit_bsr <- lm(loglike ~ mu_pct + ks_pct + nbugs + spacing +
                 ks_pct*spacing , data=log_lik)
 summary(fit_bsr)
 
+
 fit<-fit_bsr
 
+# Make predictions for main effects ------------------------------------
+
+preds<-exp(predict(fit_mains))/(1+exp(predict(fit_mains)))
+log_lik$preds <- preds
+log_lik$resid <- log_lik$prob_thrive - log_lik$preds
+
+# calculate RMSE for entire model
+log_lik %>% mutate(sq_error = resid*resid) %>% ungroup() %>%
+  summarise(RMSE = sqrt(mean(sq_error)))
 
 # Make predictions from selected model ------------------------------------
 
@@ -90,10 +101,10 @@ spacing_label <- function(string) {
   glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>diameter spacing<span>")
 }
 nbugs_label <- function(string) {
-  glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>intial bacteria<span>")
+  glue::glue("<span style = 'color:#000000;'>{string}<span> <span style = 'color:#585858;'>ini. pop.<span>")
 }
 
-poplabs <- c("Initial Population: 4", "Initial Population: 9", "Initial Population: 16")
+poplabs <- c("Pop.: 4", "Pop.: 9", "Pop.: 16")
 names(poplabs) <- c("4","9","16")
 write_csv(log_lik,here::here("output","mlr_predictions.csv"))
 
@@ -117,19 +128,19 @@ phist <- ggplot(data=log_lik,aes(x=resid)) +
 
 fname <- "mlr_pred_error_hist.png"
 floc <- here::here("output","si",fname)
-ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+ggsave(floc, phist, width=8,height=8,units="in",dpi=330)
 log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                md5sum(floc)))
 
 fname <- "mlr_pred_error_hist.pdf"
 floc <- here::here("output","si",fname)
-ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+ggsave(floc, phist, width=8,height=4,units="in",dpi=330)
 log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                md5sum(floc)))
 
 fname <- "mlr_pred_error_hist.tiff"
 floc <- here::here("output","si",fname)
-ggsave(floc, p, width=8,height=4,units="in",dpi=330)
+ggsave(floc, phist, width=8,height=4,units="in",dpi=330)
 log_info(paste('Wrote', file.path("output","si",fname), ' MD5Sum: ',
                md5sum(floc)))
 

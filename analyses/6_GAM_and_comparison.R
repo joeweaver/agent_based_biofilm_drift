@@ -1,6 +1,17 @@
 # Select a generalized additive model, attempt to predict simulation
 # results, and compare with MLR
 
+
+##############################
+# FIRST RUN/ IF THIS DOES NOT WORK RIGHT AWAY
+#
+# To save time, the GAM fits are run once and saved as RDS files
+#
+#You will need to uncomment the code associated withe GAM fits to
+#generate this files.  After they are generated, you can re-comment
+#and run much more quickly.
+#############################################################
+
 library(readr) # handle csv file import
 library(dplyr)  # work with tidy data
 library(ggplot2) # figure generation

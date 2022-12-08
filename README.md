@@ -19,7 +19,7 @@ While we expect most people will just download the results, we haved provide a l
 ## Getting and running NUFEB
 The NUFEB variant used here will be deposited in the `dev-compute-vol` branch of the [NUFEB-dev](https://github.com/nufeb/NUFEB-dev) repository. *Important* this variant is well-out of date. **We recommend anyone interested in developing new NUFEB simulations use the main branch.** This branch exists for exact reproducibility. The initial simulations were started over a year ago and, to maintain comparability between runs,  the code was not updated. As such, many of the input files are slightly different than modern NUFEB files. Additionally, the build process is, unfortunately, still very complicated.
 
-To build NUFEB, you must use the make commands enabling MPI and USER-NUFEB. The simulations run on the cluster do not require VTK. Please refer to the NUFEB repository for detailed build instructions. We recognize that building NUFEB, especially older versions, is non-trivial and are happy to help.
+To build NUFEB, you must use the make commands enabling MPI and USER-NUFEB. The simulations run on the cluster do not require VTK. Please refer to the [NUFEB repository](https://github.com/nufeb/NUFEB-dev) for detailed build instructions. We recognize that building NUFEB, especially older versions, is non-trivial and are happy to help.
 
 ## Managing the simulation workflows
 Two Snakemake-based workflows exist in `simulations/snakemakes`  For any crowding condition, such as 3x3 initial organisms spaced 5 diameters apart, you must first generate a small set of simulations (the 'seed' runs)  with one workflow, then run a second workflow for the parameter sweep.

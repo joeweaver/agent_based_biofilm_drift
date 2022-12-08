@@ -9,7 +9,7 @@ Two important things for first-time runs:
 * `0_download_sim_results.R` need only be run once. It retrieves the simulation results from the project [OSF data repository](https://osf.io/fch3z/).
 * `6_GAM_and_comparison.R` uses models which take some time to fit. The results are cached as RDS files. To generate these, some code needs to be uncommented for this first run, and this is documented within the script.
 
-Results gfrom the analysis are generated under the `output` folder which is created as the scripts are run. There are subfolders sorting some results by type. Notably, `si` and `eda` respectiviely contain data presented in Supporting Information and used during exploratory data analysis. The latter is probably not interesing to most but contains details on things such as individual sigmoid fits. Images are saved as high resolution (330 dpi) pngs, tiffs, and pdfs.
+Results from the analysis are generated under the `output` folder which is created as the scripts are run. There are subfolders sorting some results by type. Notably, `si` and `eda` respectiviely contain data presented in Supporting Information and used during exploratory data analysis. The latter is probably not interesing to most but contains details on things such as individual sigmoid fits. Images are saved as high resolution (330 dpi) pngs, tiffs, and pdfs.
 
 All runs are logged in the `log` directory and their names include a timestamp. In general, the logs contain the execution environment info and record which files were generated, along with MD5 checksums.
 
@@ -42,7 +42,7 @@ cd 5x5_2.5_kinetic
 snakemake --profile slurm --latency-wait 60 --rerun-incomplete
 ```
 
-We highly suggest running within a tmux environment or other mechanism which allows snakemake to persist after logging out.
+We highly suggest running within a `tmux` environment or use a similar mechanism which allows snakemake to persist after logging out.
 
 The most important result is `sweep_colony_outcomes.csv` which is generated in the `results/<NxN_spacing>_default_mu_ks_yield_conc` folder for each kinetic sweep. These results summarize the runs and are the files stored on OSF.io and downloaded by the analysis script.
 

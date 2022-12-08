@@ -4,48 +4,54 @@ This repository contains the analysis code supporting the journal article (in su
 
 # Data analysis
 
-The relevant analyses are encapsulated in one R project within the '''analyses'' folder. The scripts are numbered in order of intended exection. Hard dependencies between scripts are included with commented preconditions.
+The relevant analyses are encapsulated in one R project within the `analyses` folder. The scripts are numbered in order of intended exection. Hard dependencies between scripts are included with commented preconditions.
 Two important things for first-time runs:
-* 0_download_sim_results.R need only be run once. It retrieves the simulation results from the project [OSF data repository](https://osf.io/fch3z/).
-* '''6_GAM_and_comparison.R''' uses models which take some time to fit. The results are cached as RDS files. To generate these, some code needs to be uncommented for this first run, and this is documented within the script.
+* `0_download_sim_results.R` need only be run once. It retrieves the simulation results from the project [OSF data repository](https://osf.io/fch3z/).
+* `6_GAM_and_comparison.R` uses models which take some time to fit. The results are cached as RDS files. To generate these, some code needs to be uncommented for this first run, and this is documented within the script.
 
-Results gfrom the analysis are generated under the '''output''' folder which is created as the scripts are run. There are subfolders sorting some results by type. Notably, '''si''' and '''eda''' respectiviely contain data presented in Supporting Information and used during exploratory data analysis. The latter is probably not interesing to most but contains details on things such as individual sigmoid fits. Images are saved as high resolution (330 dpi) pngs, tiffs, and pdfs.
+Results gfrom the analysis are generated under the `output` folder which is created as the scripts are run. There are subfolders sorting some results by type. Notably, `si` and `eda` respectiviely contain data presented in Supporting Information and used during exploratory data analysis. The latter is probably not interesing to most but contains details on things such as individual sigmoid fits. Images are saved as high resolution (330 dpi) pngs, tiffs, and pdfs.
 
-All runs are logged in the '''log''' directory and their names include a timestamp. In general, the logs contain the execution environment info and record which files were generated, along with MD5 checksums.
+All runs are logged in the `log` directory and their names include a timestamp. In general, the logs contain the execution environment info and record which files were generated, along with MD5 checksums.
 
 # Simulations
-While we expect most people will just download the results,  we have provide a link to the exact variant of NUFEB used  and the Snakemake-based workflows used to run the simulations.
+While we expect most people will just download the results, we haved provide a link to the exact variant of NUFEB used  and the Snakemake-based workflows used to run the simulations.
 
 ## Getting and running NUFEB
-The NUFEB variant used here will be deposited in the '''dev-compute-vol''' branch of the [NUFEB-dev](https://github.com/nufeb/NUFEB-dev) repository. *Important* this variant is well-out of date. We recommend anyone interested in developing new NUFEB simulations use the main branch. This branch exists for exact reproducibility. The initial simulations were started over a year ago and the code was not updated to keep things equal between all runs. As such, many of the input files are slightly different than modern NUFEB files. Additionally, the build process is, unfortunately, still very complicated.
+The NUFEB variant used here will be deposited in the `dev-compute-vol` branch of the [NUFEB-dev](https://github.com/nufeb/NUFEB-dev) repository. *Important* this variant is well-out of date. **We recommend anyone interested in developing new NUFEB simulations use the main branch.** This branch exists for exact reproducibility. The initial simulations were started over a year ago and the code was not updated to keep things equal between all runs. As such, many of the input files are slightly different than modern NUFEB files. Additionally, the build process is, unfortunately, still very complicated.
 
 To build NUFEB, you must use the make commands enabling MPI and USER-NUFEB. The simulations run on the cluster do not require VTK. Please refer to the NUFEB repository for detailed build instructions. We recognize that building NUFEB, especially older versions, is non-trivial and are happy to help.
 
 ## Managing the simulation workflows
-Two Snakemake-based workflows exist in '''simulations/snakemakes'''.  For any crowding condition, such as 3x3 initial organisms spaced 5 diameters apart, you must first generate a small set of simulations (the 'seed' runs)  with one workflow, then run a second workflow for the parameter sweep.
+Two Snakemake-based workflows exist in `simulations/snakemakes`  For any crowding condition, such as 3x3 initial organisms spaced 5 diameters apart, you must first generate a small set of simulations (the 'seed' runs)  with one workflow, then run a second workflow for the parameter sweep.
 We have included template files for both types of runs. 
 
 For the example of 3x3 and 5 diameters:
 First:
-'''cp -r seeds_template_mxn_y_seeds/ 5x5_2.5_seeds'''
-'''cd 5x5_2.5_seeds'''
-'''snakemake''' and any addtional options required by your HPC, we used '''--profile slurm --latency-wait 60 --rerun-incomplete'''
+```
+cp -r seeds_template_mxn_y_seeds/ 5x5_2.5_seeds
+cd 5x5_2.5_seeds
+snakemake --profile slurm --latency-wait 60 --rerun-incomplete
+```
+
+The exact snakemake parameters may vary based on your computing environment.
 
 Then, after those runs complete:
-'''cp -r kinetic_template_mxn_y_seeds/ 5x5_2.5_kinetic'''
-'''cd 5x5_2.5_kinetic'''
-'''snakemake''' and any addtional options required by your HPC, we used '''--profile slurm --latency-wait 60 --rerun-incomplete'''
+```
+cp -r kinetic_template_mxn_y_seeds/ 5x5_2.5_kinetic
+cd 5x5_2.5_kinetic
+snakemake --profile slurm --latency-wait 60 --rerun-incomplete
+```
 
 We highly suggest running within a tmux environment or other mechanism which allows snakemake to persist after logging out.
 
-The most important result is '''sweep_colony_outcomes.csv''', which is generated in the '''results/<NxN_spacing>_default_mu_ks_yield_conc/''' folder for each kinetic sweep. These results summarize the runs and are the files stored on OSF.io and downloaded by the analysis script.
+The most important result is `sweep_colony_outcomes.csv` which is generated in the `results/<NxN_spacing>_default_mu_ks_yield_conc` folder for each kinetic sweep. These results summarize the runs and are the files stored on OSF.io and downloaded by the analysis script.
 
-If interested in a 'test run' we also highly suggest reducing the parameter sweep by altering the '''sweep_coeffs''' list in the kinetic sweep '''Snakefile'''.
+If interested in a 'test run' we also highly suggest reducing the parameter sweep by altering the `sweep_coeffs` list in the kinetic sweep `Snakefile`
 
 # Execution environments
 
 The HPC environment we used incorporated the following modules, some are defaults and may not be needed
-'''
+```
 Currently Loaded Modules:
   1) gompi/2020a                       13) numactl/2.0.13-GCCcore-10.2.0
   2) Szip/2.1.1-GCCcore-9.3.0          14) UCX/1.9.0-GCCcore-10.2.0
@@ -59,10 +65,10 @@ Currently Loaded Modules:
  10) hwloc/2.2.0-GCCcore-10.2.0        22) GMP/6.2.0-GCCcore-10.2.0
  11) libevent/2.1.12-GCCcore-10.2.0    23) libffi/3.3-GCCcore-10.2.0
  12) GCCcore/10.2.0                    24) Python/3.8.6-GCCcore-10.2.0
-''''
+```
 
 Similarly, the R environment used included the following:
-'''
+```
 R version 4.2.0 (2022-04-22)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 20.04.2 LTS
@@ -93,7 +99,7 @@ loaded via a namespace (and not attached):
 [33] DBI_1.1.3         magrittr_2.0.3    scales_1.2.1      cli_3.4.1         stringi_1.7.8     vroom_1.5.7       carData_3.0-5     farver_2.1.1
 [41] ggsignif_0.6.3    xml2_1.3.3        ellipsis_0.3.2    ragg_1.2.4        generics_0.1.3    vctrs_0.4.1       bit64_4.0.5       glue_1.6.2
 [49] markdown_1.1      purrr_0.3.4       hms_1.1.1         abind_1.4-5       parallel_4.2.0    colorspace_2.0-3  rstatix_0.7.0
-'''
+```
 
 
 

@@ -1,6 +1,6 @@
 # Quantifying Drift-Fitness Balance Using an Agent-Based Biofilm Model of Identical Heterotrophs Under Low Nutrient Conditions
 
-This repository contains the analysis code supporting the journal article (in submission) "Quantifying Drift-Fitness Balance Using an Agent-Based Biofilm Model of Identical Heterotrophs Under Low Nutrient Conditions"
+This repository contains the analysis code supporting the journal article (in submission, [preprint here](https://biorxiv.org/cgi/content/short/2022.12.08.519628v1)) "Quantifying Drift-Fitness Balance Using an Agent-Based Biofilm Model of Identical Heterotrophs Under Low Nutrient Conditions"
 
 # Data analysis
 

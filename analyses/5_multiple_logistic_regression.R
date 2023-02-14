@@ -160,7 +160,7 @@ p<-ggplot(data=log_lik, aes(x=mu_50*100, y=ks_pct*100)) +
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   scale_y_continuous(labels = function(x) paste0(x, "%"),

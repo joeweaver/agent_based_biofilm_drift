@@ -193,7 +193,7 @@ p <- ggplot(sig_fits, aes(x=ks_pct,y=mu_50,color=factor(spacing),shape=factor(sp
   geom_point(size=1.1,alpha=0.9)+
   #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
   ylab(TeX("50% Thriving Odds ($\\μ_{50}$)")) +
-  xlab(TeX("Change in substrate affinity ($\\K_{s}$)")) +
+  xlab(TeX("Change in half saturation ($\\K_{s}$)")) +
   #ylim(-0.3,0.7)+
   coord_fixed()+
   scale_y_continuous(labels = scales::percent_format(accuracy = 1),

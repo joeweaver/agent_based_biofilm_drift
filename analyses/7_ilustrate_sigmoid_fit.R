@@ -63,7 +63,7 @@ p_single_map<-ggplot(data=all_spreads %>% filter(nbugs==4) %>% filter(spacing==5
              aes(x=lo*100),shape=8,alpha=0.75)+
   geom_point(data=all_spreads%>% filter(nbugs==4) %>% filter(spacing==5)  %>% filter(ks_pct==0.0)%>% filter(range_pct %in% c(0.95)),
              aes(x=hi*100),shape=8,alpha=0.75)+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in substrate half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   scale_y_continuous(labels = function(x) paste0(x, "%"),
@@ -126,8 +126,8 @@ p_fit<-ggplot(sig_run,aes(x=mu_pct*100,y=prob_thrive,group=ks,color=factor(ks)))
 
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   ylab("Probability of transitioning to thriving")+
-  guides(color=guide_legend(title="Affinity (Ks)"),
-         linetype=guide_legend(title="Affinity (Ks)")) +
+  guides(color=guide_legend(title="Half Saturation (Ks)"),
+         linetype=guide_legend(title="Half Saturation (Ks)")) +
   theme(panel.background = element_blank(),
         legend.position = "none",
         axis.line=element_line(),

@@ -144,7 +144,7 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.95), aes(x=ks_pct,y=spread,color=f
                                              after_stat(rr.label), sep = "*\", \"*")))+
               #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
               ylab(TeX("Drift-Fitness co-dominance range ($spread_{95}$)")) +
-              xlab(TeX("Change in substrate affinity ($\\K_{s}$)")) +
+              xlab(TeX("Change in half saturation ($\\K_{s}$)")) +
               #ylim(-0.3,0.7)+
               coord_fixed(ylim=c(0.1,1.4))+
               scale_y_continuous(labels = scales::percent_format(accuracy = 1),
@@ -208,7 +208,7 @@ p <- ggplot(all_spreads%>%filter(range_pct==0.68), aes(x=ks_pct,y=spread,color=f
                                  after_stat(rr.label), sep = "*\", \"*")))+
   #geom_smooth(method='lm', formula= y~x+x^4, se=FALSE,size=0.4)+
   ylab(TeX("Sigmoid midpoint ($\\μ_{50}$)")) +
-  xlab(TeX("Change in substrate affinity ($\\K_{s}$)")) +
+  xlab(TeX("Change in half saturation ($\\K_{s}$)")) +
   #ylim(-0.3,0.7)+
   coord_fixed(ylim=c(0,0.75))+
   scale_y_continuous(labels = scales::percent_format(accuracy = 1),
@@ -269,7 +269,7 @@ p<-ggplot(data=all_spreads, aes(x=mu_50*100, y=ks_pct*100)) +
   geom_point(data=all_spreads %>% filter(range_pct %in% c(0.68)),
              aes(x=hi*100),shape=3,alpha=0.75)+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label )) +
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   scale_y_continuous(labels = function(x) paste0(x, "%"),

@@ -261,7 +261,7 @@ p<-ggplot(data=combined, aes(x=mu_50*100, y=ks_pct*100)) +
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
                 facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   scale_y_continuous(labels = function(x) paste0(x, "%"),
@@ -351,7 +351,7 @@ p<-ggplot(data=mlr_res, aes(x=mu_50*100, y=ks_pct*100)) +
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   coord_fixed(ylim=c(-50,50))+
@@ -382,7 +382,7 @@ p_comp_gam_pred<-ggplot(data=composite, aes(x=mu_50*100, y=ks_pct*100)) +
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   coord_fixed(ylim=c(-50,50))+
@@ -416,7 +416,7 @@ p_comp_sim_pred<-ggplot(data=composite, aes(x=mu_50*100, y=ks_pct*100)) +
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   coord_fixed(ylim=c(-50,50))+
@@ -462,7 +462,7 @@ p_err<-ggplot(data=mlr_res, aes(x=mu_50*100, y=ks_pct*100)) +
 
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   coord_fixed(ylim=c(-50,50))+
@@ -534,7 +534,7 @@ p_gam_err<-ggplot(data=composite, aes(x=mu_50*100, y=ks_pct*100)) +
                     #labels = seq(-0.8,0.8,by=0.1))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   coord_fixed(ylim=c(-50,50))+
@@ -640,7 +640,7 @@ p_gam_mains_err<-ggplot(data=combined.main, aes(x=mu_50*100, y=ks_pct*100)) +
                     labels = c("0-10%","10-20%","20-30%","30-40%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%","100-110%"))+
   facet_grid(rows = vars(nbugs), cols=vars(spacing), labeller = labeller(.rows = nbugs_label, .cols = spacing_label ))+
   coord_fixed()+
-  ylab(TeX("Change in substrate affinity ($K_s$)")) +
+  ylab(TeX("Change in half saturation ($K_s$)")) +
   xlab(TeX("Change in maximum specific growth rate ($\\mu_{~~max}$)"))+
   coord_fixed(xlim=c(-50,50))+
   coord_fixed(ylim=c(-50,50))+
